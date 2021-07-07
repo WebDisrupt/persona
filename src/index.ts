@@ -343,7 +343,7 @@ export class persona {
         if(colonCheck === 0){
             let newId = await this.generateStorageId().then( result =>{ return result });
             let decrypted = cypher.decrypt(unknown, this.password+this.username);
-            if(decrypted.split("|").length === 3){
+            if(typeof decrypted === "string" && decrypted.split("|").length === 3){
                 return encrypt ? unknown : decrypted;
             } else {
                 let exists = this.current.link.find( item => { return cypher.decrypt(item, this.password+this.username).includes(`|${this.appName}|${unknown}`) });

@@ -53,7 +53,7 @@ var cypher = /** @class */ (function () {
         return key.length <= 32 ? key + this.ENCRYPTION_KEY.slice(key.length) : key.slice(0, 32);
     };
     /**
-     * Encrypt using Infinite secure encryption process
+     * Encrypt using secure encryption process
      * @param text - String to encrypt
      * @param key - Key used to dynamically strengthen encryption
      * @returns
@@ -71,27 +71,28 @@ var cypher = /** @class */ (function () {
         return encrypted;
     };
     /**
-     * Decrypt using Infinite secure encryption process
+     * Decrypt using secure encryption process. If it fails then return an empty string.
      * @param text - String to decrypt
      * @param key - Key used to dynamically strengthen encryption
      * @returns
      */
     cypher.decrypt = function (text, key) {
         if (key === void 0) { key = ""; }
+        var decrypted;
         key = this.getKey(key);
-        var decrypted = CryptoJS.AES.decrypt(text, key);
+        try {
+            decrypted = CryptoJS.AES.decrypt(text, key);
+        }
+        catch (err) {
+            decrypted = "";
+        }
         if (this.debug)
             console.log("Input: ", text);
         if (this.debug)
             console.log("Output: ", CryptoJS.enc.Utf8.stringify(decrypted));
         if (this.debug)
             return text;
-        try {
-            return CryptoJS.enc.Utf8.stringify(decrypted);
-        }
-        catch (err) {
-            console.log(err);
-        }
+        return CryptoJS.enc.Utf8.stringify(decrypted);
     };
     /**
     * Uses Bcrypt to create a secure irreversible hash

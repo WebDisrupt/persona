@@ -586,7 +586,7 @@ var persona = /** @class */ (function () {
                     case 1:
                         newId = _a.sent();
                         decrypted = cypher_1.cypher.decrypt(unknown, this.password + this.username);
-                        if (decrypted.split("|").length === 3) {
+                        if (typeof decrypted === "string" && decrypted.split("|").length === 3) {
                             return [2 /*return*/, encrypt ? unknown : decrypted];
                         }
                         else {

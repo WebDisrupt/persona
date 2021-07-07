@@ -5,9 +5,10 @@
       "sourceMap": true,
       "outDir": "dist",
       "rootDir": "src",
-      "baseUrl": ".",
-      "paths": {
-        "*": ["node_modules/*", "test/*"]
-      }
-    }
+      "baseUrl": "."
+    },
+    "exclude": [
+      "node_modules",
+      "test"
+    ]
 }

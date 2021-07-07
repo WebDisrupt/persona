@@ -73,4 +73,3 @@ test("Delete a data storage block(s)", async ()=>{
     await personaInstance.saveStorageBlock(thisId2, thisContent);
     expect((await personaInstance.deleteStorageBlock()).status).toBe(true);
 });
-
