@@ -1,4 +1,6 @@
-# persona 
+
+
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-81.25%25-green) 
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -52,7 +54,7 @@ persona.load("john@doe.com", "123456");
 ```
 
 **Delete**
-Deletes a persona. You can optionally target a persona that isn't loaded by providing a different username or password.
+Deletes a persona. You can optionally target a persona that isn't loaded by providing a valid username or password.
 ```javascript
 persona.delete();
 ```

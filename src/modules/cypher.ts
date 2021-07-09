@@ -49,7 +49,7 @@ export class cypher {
         if(this.debug) console.log("Input: ", text);
         if(this.debug) console.log("Output: ", CryptoJS.enc.Utf8.stringify(decrypted));
         if(this.debug) return text;
-        return decrypted === "" ? "" : CryptoJS.enc.Utf8.stringify(decrypted);
+        return decrypted === undefined || decrypted === "" ? "" : CryptoJS.enc.Utf8.stringify(decrypted);
     }
 
      /**

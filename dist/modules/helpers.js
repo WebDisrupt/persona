@@ -1,23 +1,15 @@
 "use strict";
 exports.__esModule = true;
 exports.personaHelpers = void 0;
-var personaHelpers = /** @class */ (function () {
+var personaHelpers = (function () {
     function personaHelpers() {
     }
-    /**
-         *  How long it could take to theoretically crack your password
-         * @param password - password used
-         * @param strength - Strength of the password
-         * @param hashPower - Processing power
-         * @returns
-         */
     personaHelpers.calculateCrackTime = function (password, strength, hashPower) {
         var possibleCharacters = 0;
         var letters = 26;
         var capitalLetters = 26;
         var numbers = 10;
         var special = 33;
-        // Detect if contain letter, number, special char and manipulate value
         for (var i = 0; i < password.length; i++) {
             var character = password.charAt(i);
             if (/[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g.test(character)) {
@@ -47,10 +39,9 @@ var personaHelpers = /** @class */ (function () {
                                 strength == 17 ? .125 :
                                     strength == 18 ? .065 :
                                         strength == 19 ? .03125 :
-                                            strength == 20 ? .015625 : 0)) / 31536000; // 31536000 is a Years worth of seconds = 60 seconds * 60 minutes * 24 hours * 365 days
-        totalTime /= hashPower; // Divided by processing power
+                                            strength == 20 ? .015625 : 0)) / 31536000;
+        totalTime /= hashPower;
         var postFix = " years.";
-        // Convert to lower then years if equals 0
         if (Math.round(totalTime) == 0) {
             totalTime *= 365;
             if (Math.round(totalTime) == 0) {

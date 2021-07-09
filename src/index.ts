@@ -1,10 +1,14 @@
 /**
  * Persona - Personal information storage, privacy, and security
  */
-
-import { personaRoot, personaSeed, hashStrength} from './models/core';
+import { hashStrength, hashStrengthDetails } from './models/hash-strength';
+import { personaRoot, personaSeed } from './models/persona-root';
 import { cypher } from './modules/cypher';
 import { response } from './modules/response';
+export { hashStrength, hashStrengthDetails } from './models/hash-strength';
+export { personaRoot, personaSeed } from './models/persona-root';
+export { personaHelpers } from './modules/helpers';
+
 let uuid = require('uuid-random');
 var fs = require("fs");
 var path = require("path");
