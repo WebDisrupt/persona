@@ -90,7 +90,7 @@ export class persona {
     }
 
     /**
-     * Unloads all stored data. Essentially the same as logging out.
+     * Unloads all currently loaded data. Essentially the same as logging out.
      * @returns 
      */
     public unload(){
@@ -304,7 +304,7 @@ export class persona {
 
 
     /**
-     * Saves a block of data to an existing block or creates a new block
+     * Loads a block of data form an existing block
      * @param data The id property is required to identify the blocks purpose and if it already exists.
      * @returns 
      */

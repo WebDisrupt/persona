@@ -14,7 +14,7 @@ npm i @webdisrupt/persona --save
 ```
 
 
-## Getting started
+## Getting Started
 Once installed, you will need to import the package and create a new instance. Each instance can house a single logged in persona. The persona will handle all the saving and and loading of data and abstract it to simple functions.
 
 ```javascript
@@ -30,7 +30,7 @@ let persona = new persona({
 
 ```
 
-## persona options
+### Persona Options
 Although none of these parameters are technically required, we do reccommend at a bare minimium using the **appName** to help scope your data.
 - **appName**: This should represent your application name and is used for scoping data. So you might want to make it a very long unique name.
 - **path**: The default path is "C:\\personas". You can change this, but know that it will not detect their previous profile information. So it is not recommended to change this yourself, but instead allow the end-user to change instead.
@@ -39,25 +39,69 @@ Although none of these parameters are technically required, we do reccommend at 
 
 ## API
 
-**Create**
-Creating a new persona is as easy as calling the following function on the new instance you created.
 
+
+## Persona Root
+---
+The persona root file is the core of the persona system and contains various standardized information. This file is json and contain a couple different encrypted pieces of data. This data can be unlocked and is the core of the persona system. It also stores all references to the data storage block which hold application specific information.
+
+### **Create Persona**
+Creating a new persona and starts referencing it in your session.
+Essentially the same as creating a new account.
 ```javascript
-persona.create("john@doe.com", "123456", 1);
+persona.create("username", "password", 1);
 ```
 
-**Load**
-Creating a new persona is as easy as calling the following function on the new instance you created. You can leave blank if persona has already been loaded once or the create was just called.
-
+### **Load Persona**
+Loads an exisitng Persona and starts referencing it in your session. Essentially the same as logging in.
 ```javascript
-persona.load("john@doe.com", "123456");
+persona.load("username", "password");
 ```
 
-**Delete**
-Deletes a persona. You can optionally target a persona that isn't loaded by providing a valid username or password.
+### **Save Persona**
+Saves the persona that is currently referenced.
+```javascript
+persona.save();
+```
+
+### **Delete Persona**
+ Deletes the currently referenced persona.
 ```javascript
 persona.delete();
 ```
 
+### **Unload Persona**
+Unloads the currently referenced persona. Essentially the same as logging out.
+```javascript
+persona.unload();
+```
 
-**TODO** - More documentation coming soon.
+
+
+## Data Storage blocks
+---
+What are Perona data storage blocks? A chunk of data that can take any format and has been  secured using AES 256 encryption. Each block contains a unique id that is referenced by the root file. Each block contains a randomly generated file id so it cannot be identified. The id is structured as radnomFilename|uniqueApplicationName|uniqueDataBlockName. Please make your unique application name very unique to avoid collissions with other applications. This reference will be stored in your persona.root file and can be referenced after intial login is performed. 
+
+
+### **Save Data Storage Block**
+Saves a block of data to an existing block or creates a new block based on the application id & save sotrage id. Note: The unique id can caontain any character except **"|"** character. 
+```javascript
+persona.saveStorageBlock("unique-id-string", "Whatever format or data you want to save.")
+```
+
+### **Load Data Storage Block**
+Loads a block of data form an existing block. Note: The unique id can caontain any character except **"|"** character. 
+```javascript
+persona.loadStorageBlock("unique-id-string");
+```
+
+### **Delete Data Storage Block**
+Deletes a storage block. Note: The unique id can caontain any character except **"|"** character.
+```javascript
+persona.deleteStorageBlock("unique-id-string");
+```
+
+## The Future
+I am looking to expand this library and create a way to sync data with cloud providers, peer to other devices, or self hosting. Thus creating a way to store your data as you would with a cloud provider but with them not being able, view, or tamper with your data.
+
+I would also like to increase redundancy, security, and add other cool features. If this sounds exciting and you would like to help then please don't hesitate to reach out to me. team@webdisrupt.com
