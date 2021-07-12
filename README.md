@@ -38,11 +38,15 @@ Although none of these parameters are technically required, we do reccommend at 
 
 ## API
 
-All API calls have a standardized response object. It contains a status which provides a bool on did it success or fail. The second property is a customer friendly messgae on what happened. The last is an optional data property that contians any data requested.
+All API calls have a standardized response object. It contains a status which provides a bool on success or failure. The second property is a customer friendly message on what happened. The last is an optional data property that contians any data requested.
 
+Standard response object model
+```javascript
+{status: boolean, message: string, data:any}
+```
 
 ## Persona Root
----
+
 The persona root file is the core of the persona system and contains various standardized information. This file is json and contain a couple different encrypted pieces of data. This data can be unlocked and is the core of the persona system. It also stores all references to the data storage block which hold application specific information.
 
 ### **Create Persona**
@@ -84,7 +88,7 @@ persona.getRecentList();
 
 
 ## Data Storage blocks
----
+
 What are Perona data storage blocks? A chunk of data that can take any format and has been  secured using AES 256 encryption. Each block contains a unique id that is referenced by the root file. Each block contains a randomly generated file id so it cannot be identified. The id is structured as radnomFilename|uniqueApplicationName|uniqueDataBlockName. Please make your unique application name very unique to avoid collissions with other applications. This reference will be stored in your persona.root file and can be referenced after intial login is performed. 
 
 
