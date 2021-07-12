@@ -1,6 +1,6 @@
 
 
-# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-81.25%25-green) 
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-84%25-green)
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -8,11 +8,10 @@ This library uses a combination of Argon2id hashing and AES 256 encryption which
 
 ## Installation 
 
-You can install via NPM
+You can install via NPM or download from GitHub.
 ```
-npm i @webdisrupt/persona --save
+npm i @webdisrupt/persona
 ```
-
 
 ## Getting Started
 Once installed, you will need to import the package and create a new instance. Each instance can house a single logged in persona. The persona will handle all the saving and and loading of data and abstract it to simple functions.
@@ -39,6 +38,7 @@ Although none of these parameters are technically required, we do reccommend at 
 
 ## API
 
+All API calls have a standardized response object. It contains a status which provides a bool on did it success or fail. The second property is a customer friendly messgae on what happened. The last is an optional data property that contians any data requested.
 
 
 ## Persona Root
@@ -76,6 +76,11 @@ Unloads the currently referenced persona. Essentially the same as logging out.
 persona.unload();
 ```
 
+### **Get Recently loaded Personas**
+Get all recently loaded profiles.
+```javascript
+persona.getRecentList();
+```
 
 
 ## Data Storage blocks

@@ -1,6 +1,6 @@
 {
   "name": "@webdisrupt/persona",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Web Disrupt",
   "description": "Store local data in a secure data vault.",
   "main": "dist/index.js",
@@ -10,7 +10,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "test-watch": "jest --watch",
-    "test-coverage": "jest --coverage"
+    "test-coverage": "jest --coverage",
+    "publish": "npm publish"
   },
   "dependencies": {
     "crypto-js": "^4.0.0",

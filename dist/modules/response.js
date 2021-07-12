@@ -8,8 +8,9 @@ var response = (function () {
         if (data === void 0) { data = null; }
         return { status: true, message: message, data: data };
     };
-    response.failed = function (message) {
-        return { status: false, message: message };
+    response.failed = function (message, data) {
+        if (data === void 0) { data = null; }
+        return { status: false, message: message, data: data };
     };
     return response;
 }());

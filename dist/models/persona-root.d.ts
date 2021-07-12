@@ -9,17 +9,15 @@ export interface personaRoot {
     mfa: string;
     link: Array<string>;
 }
-export interface profile {
-    avatar?: string;
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    email?: string;
-    age?: Date;
-    gender?: string;
-}
 export interface personaSeed {
     id?: string;
     username?: string;
     avatar?: string;
+    location?: string;
+}
+export interface personaOptions {
+    appName?: string;
+    path?: string;
+    previous?: personaSeed;
+    recentList?: Array<personaSeed>;
 }

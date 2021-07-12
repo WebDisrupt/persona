@@ -1,11 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -43,15 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.persona = exports.personaHelpers = exports.hashStrengthDetails = exports.hashStrength = void 0;
+exports.persona = exports.hashStrengthDetails = exports.hashStrength = void 0;
 var hash_strength_1 = require("./models/hash-strength");
+exports.hashStrength = hash_strength_1.hashStrength;
+exports.hashStrengthDetails = hash_strength_1.hashStrengthDetails;
 var cypher_1 = require("./modules/cypher");
 var response_1 = require("./modules/response");
-var hash_strength_2 = require("./models/hash-strength");
-__createBinding(exports, hash_strength_2, "hashStrength");
-__createBinding(exports, hash_strength_2, "hashStrengthDetails");
-var helpers_1 = require("./modules/helpers");
-__createBinding(exports, helpers_1, "personaHelpers");
 var uuid = require('uuid-random');
 var fs = require("fs");
 var path = require("path");
@@ -63,8 +53,10 @@ var persona = (function () {
         this.ext = ".pstore";
         this.appName = "default";
         this.path = "C:\\personas";
-        this.recentList = [];
         this.current = null;
+        this.recentList = [];
+        this.previous = null;
+        this.profile = null;
         this.username = null;
         this.password = null;
         this.asyncSome = function (arr, predicate) { return __awaiter(_this, void 0, void 0, function () {
@@ -116,24 +108,354 @@ var persona = (function () {
         if ((options === null || options === void 0 ? void 0 : options.recentList) !== undefined)
             this.recentList = options.recentList;
         if ((options === null || options === void 0 ? void 0 : options.previous) !== undefined) {
-            this.username = options.previous;
+            this.username = options.previous.username;
+            this.previous = options.previous;
         }
         if ((options === null || options === void 0 ? void 0 : options.appName) !== undefined)
             this.appName = options.appName;
     }
-    persona.prototype.discovery = function () {
-        if (this.username != null) {
-            return this.username;
-        }
-        return null;
-    };
     persona.prototype.isLoggedIn = function () {
-        return this.username != null && this.password != null ? true : false;
+        return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in") :
+            this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.") : response_1.response.failed("No user is currently logged in.");
     };
     persona.prototype["switch"] = function (username, password) {
+        this.unload();
         this.username = username;
         this.username = password;
-        this.load();
+        return this.load();
+    };
+    persona.prototype.getRecentList = function () {
+        return this.recentList !== null ? response_1.response.success("Success, " + this.recentList.length + " Prsonas found.", this.recentList) : response_1.response.failed("Could not find any recently loaded Prsonas.");
+    };
+    persona.prototype.unload = function () {
+        var _a;
+        if (this.current === null)
+            return response_1.response.failed("Persona cannot be unloaded because no Persona loaded.");
+        this.previous = {
+            id: this.current.id,
+            username: this.username,
+            avatar: ((_a = this.profile) === null || _a === void 0 ? void 0 : _a.avatar) != null ? this.profile.avatar : null
+        };
+        this.current = null;
+        this.username = null;
+        this.password = null;
+        this.profile = null;
+        return response_1.response.success("Successfully logged out of the Persona " + this.previous.username + ".");
+    };
+    persona.prototype.load = function (username, password, dataMap) {
+        if (username === void 0) { username = null; }
+        if (password === void 0) { password = null; }
+        if (dataMap === void 0) { dataMap = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var id;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.username !== username && this.password !== password)
+                            this.unload();
+                        username = username === null ? this.username : username;
+                        password = password === null ? this.password : password;
+                        return [4, this.find(username, password)];
+                    case 1:
+                        id = _a.sent();
+                        if (!(id !== null)) return [3, 3];
+                        return [4, this.loadFile(this.path + "\\" + id + "\\" + this.root).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                                var persona, _a, _b, _c, _d;
+                                return __generator(this, function (_e) {
+                                    switch (_e.label) {
+                                        case 0:
+                                            persona = JSON.parse(content);
+                                            return [4, cypher_1.cypher.verify(password + username, persona.password)];
+                                        case 1:
+                                            if (!_e.sent()) return [3, 5];
+                                            this.password = password;
+                                            this.username = username;
+                                            this.current = persona;
+                                            this.profile = JSON.parse(cypher_1.cypher.decrypt(persona.profile, password + username));
+                                            _b = (_a = response_1.response).success;
+                                            _c = [username + ", Welcome back."];
+                                            if (!(dataMap !== null)) return [3, 3];
+                                            return [4, this.loadStorageBlocks(dataMap)];
+                                        case 2:
+                                            _d = (_e.sent()).data;
+                                            return [3, 4];
+                                        case 3:
+                                            _d = null;
+                                            _e.label = 4;
+                                        case 4: return [2, _b.apply(_a, _c.concat([_d]))];
+                                        case 5: return [2, response_1.response.failed("The username or password is incorrect.")];
+                                    }
+                                });
+                            }); })];
+                    case 2: return [2, _a.sent()];
+                    case 3: return [2, response_1.response.failed("The username or password is incorrect.")];
+                }
+            });
+        });
+    };
+    persona.prototype["delete"] = function (username, password) {
+        if (username === void 0) { username = null; }
+        if (password === void 0) { password = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var id, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        username = username === null ? this.username : username;
+                        password = password === null ? this.password : password;
+                        return [4, this.find(username, password)];
+                    case 1:
+                        id = _b.sent();
+                        if (!(id !== null)) return [3, 6];
+                        _b.label = 2;
+                    case 2:
+                        _b.trys.push([2, 4, , 5]);
+                        return [4, fs.rmdirSync(this.path + "\\" + id, { recursive: true })];
+                    case 3:
+                        _b.sent();
+                        this.unload();
+                        return [2, response_1.response.success(username + "'s Persona has been deleted.")];
+                    case 4:
+                        _a = _b.sent();
+                        return [2, response_1.response.failed("Something failed when deleting this Persona.")];
+                    case 5: return [3, 7];
+                    case 6: return [2, response_1.response.failed("Could not find a valid Persona or it has already been deleted.")];
+                    case 7: return [2];
+                }
+            });
+        });
+    };
+    persona.prototype.create = function (username, password, strength) {
+        if (strength === void 0) { strength = hash_strength_1.hashStrength.medium; }
+        return __awaiter(this, void 0, void 0, function () {
+            var files, checkIfPersonaExists, newID, recoveryId, location, key;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, fs.promises.readdir(this.path)];
+                    case 1:
+                        files = _a.sent();
+                        return [4, this.asyncSome(files, function (personaId) { return __awaiter(_this, void 0, void 0, function () {
+                                var rootFile, _a, _b;
+                                return __generator(this, function (_c) {
+                                    switch (_c.label) {
+                                        case 0:
+                                            _b = (_a = JSON).parse;
+                                            return [4, this.loadFile(this.path + "\\" + personaId + "\\" + this.root)];
+                                        case 1:
+                                            rootFile = _b.apply(_a, [_c.sent()]);
+                                            return [2, username === cypher_1.cypher.decrypt(rootFile.username, password + username)];
+                                    }
+                                });
+                            }); })];
+                    case 2:
+                        checkIfPersonaExists = _a.sent();
+                        if (checkIfPersonaExists)
+                            return [2, response_1.response.failed('Persona ${username} already exists, please select a different username.')];
+                        return [4, this.generatePersonaId().then(function (id) { return id; })];
+                    case 3:
+                        newID = _a.sent();
+                        recoveryId = cypher_1.cypher.generateRecoveryCode();
+                        location = this.path + "\\" + newID;
+                        key = password + username;
+                        return [4, cypher_1.cypher.hash(key, Number(strength.toString())).then(function (hash) { return __awaiter(_this, void 0, void 0, function () {
+                                var newProfile, newRes;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            newProfile = {
+                                                id: newID,
+                                                username: cypher_1.cypher.encrypt(username, key),
+                                                password: hash,
+                                                strength: strength,
+                                                profile: cypher_1.cypher.encrypt("{\"firstName\":\"\", \"lastName\":\"\"}", key),
+                                                mfa: "none",
+                                                recovery: cypher_1.cypher.encrypt(key, recoveryId),
+                                                link: []
+                                            };
+                                            this.username = username;
+                                            this.password = password;
+                                            this.current = newProfile;
+                                            this.addRecentListItem({ id: newID, username: username, avatar: null, location: location });
+                                            return [4, this.updateFile(location, this.root, JSON.stringify(newProfile))];
+                                        case 1:
+                                            newRes = _a.sent();
+                                            return [2, newRes ? response_1.response.success("Persona ${this.username} successfully created.", recoveryId) : response_1.response.failed("Persona ${this.username} failed to be created. Please check folder permissions.")];
+                                    }
+                                });
+                            }); })];
+                    case 4: return [2, _a.sent()];
+                }
+            });
+        });
+    };
+    persona.prototype.save = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var newRes;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this.current !== null && this.username !== null && this.password !== null)) return [3, 2];
+                        return [4, this.updateFile(this.path + "\\" + this.current.id, this.root, JSON.stringify(this.current))];
+                    case 1:
+                        newRes = _a.sent();
+                        return [2, newRes ? response_1.response.success("Persona ${this.username} successfully created.") : response_1.response.failed("Persona ${this.username} failed to be created. Please check folder permissions.")];
+                    case 2: return [2, response_1.response.failed('Persona failed to be saved. No Persona is active.')];
+                }
+            });
+        });
+    };
+    persona.prototype.getProfile = function () {
+        return this.profile === null ? response_1.response.failed("No current profile exists.") : response_1.response.success(this.username + "'s profile has been loaded successfully.", this.profile);
+    };
+    persona.prototype.saveProfile = function (newProfile) {
+        if (this.username === null || this.password === null)
+            return response_1.response.failed("No current profile exists.");
+        this.profile = newProfile;
+        this.current.profile = cypher_1.cypher.encrypt(JSON.stringify(newProfile), this.password + this.username);
+        return response_1.response.success(this.username + "'s profile was saved successfully.");
+    };
+    persona.prototype.loadStorageBlocks = function (dataIdMap) {
+        return __awaiter(this, void 0, void 0, function () {
+            var collection, _a, _b, _i, dataId, item;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = [];
+                        for (_b in dataIdMap)
+                            _a.push(_b);
+                        _i = 0;
+                        _c.label = 1;
+                    case 1:
+                        if (!(_i < _a.length)) return [3, 4];
+                        dataId = _a[_i];
+                        return [4, this.loadStorageBlock(dataId)];
+                    case 2:
+                        item = _c.sent();
+                        collection.push(item.status === true ? item.data : null);
+                        _c.label = 3;
+                    case 3:
+                        _i++;
+                        return [3, 1];
+                    case 4:
+                        ;
+                        return [2, response_1.response.success("Data storage blocks loaded successfully.", collection)];
+                }
+            });
+        });
+    };
+    persona.prototype.loadStorageBlock = function (dataId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id, getProperId;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.setDataBlockID(dataId, true)];
+                    case 1:
+                        id = _a.sent();
+                        return [4, this.setDataBlockID(dataId, false)];
+                    case 2:
+                        getProperId = (_a.sent()).split("|");
+                        return [4, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.ext).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    return [2, response_1.response.success("Data storage block was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
+                                });
+                            }); })];
+                    case 3: return [2, _a.sent()];
+                }
+            });
+        });
+    };
+    persona.prototype.saveStorageBlock = function (dataId, content) {
+        return __awaiter(this, void 0, void 0, function () {
+            var checkIfBlockExists, newRes, _a;
+            var _this = this;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4, this.setDataBlockID(dataId)];
+                    case 1:
+                        dataId = _b.sent();
+                        if (this.current === null)
+                            return [2, response_1.response.failed("No profile loaded.")];
+                        if (dataId === undefined || dataId === null)
+                            return [2, response_1.response.failed("No storage id provided.")];
+                        checkIfBlockExists = this.current.link.some(function (item) {
+                            var block = cypher_1.cypher.decrypt(item, _this.password + _this.username).split("|");
+                            return block[1] === _this.appName && block[2] === dataId;
+                        });
+                        if (!checkIfBlockExists) return [3, 3];
+                        return [4, this.updateStorageBlock(dataId, content)];
+                    case 2:
+                        _a = _b.sent();
+                        return [3, 5];
+                    case 3: return [4, this.createStorageBlock(dataId, content)];
+                    case 4:
+                        _a = _b.sent();
+                        _b.label = 5;
+                    case 5:
+                        newRes = _a;
+                        if (newRes.status === true) {
+                            return [2, response_1.response.success("Data storage block " + dataId[2] + " was saved successfully.")];
+                        }
+                        else {
+                            return [2, newRes];
+                        }
+                        return [2];
+                }
+            });
+        });
+    };
+    persona.prototype.deleteStorageBlock = function (dataId) {
+        if (dataId === void 0) { dataId = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var personaId, files;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4, this.find(this.username, this.password)];
+                    case 1:
+                        personaId = _a.sent();
+                        return [4, this.setDataBlockID(dataId)];
+                    case 2:
+                        dataId = _a.sent();
+                        if (!(personaId !== null)) return [3, 6];
+                        if (!(dataId === null)) return [3, 4];
+                        return [4, fs.promises.readdir(this.path + "\\" + personaId)];
+                    case 3:
+                        files = _a.sent();
+                        try {
+                            files.forEach(function (file) {
+                                if (file !== _this.root) {
+                                    fs.unlinkSync(_this.path + "\\" + personaId + "\\" + file);
+                                }
+                            });
+                            return [2, response_1.response.success("Successfully deleted all storage blocks.")];
+                        }
+                        catch (_b) {
+                            return [2, response_1.response.failed("Could not find any storage blocks to delete.")];
+                        }
+                        return [3, 5];
+                    case 4:
+                        try {
+                            fs.unlinkSync(this.path + "\\" + personaId + "\\" + (dataId.split('|')[0]) + this.ext);
+                            return [2, response_1.response.success("Successfully deleted data storage block.[" + dataId + "]")];
+                        }
+                        catch (err) {
+                            return [2, response_1.response.failed("Failed to find the data storage block.[" + dataId + "]")];
+                        }
+                        _a.label = 5;
+                    case 5: return [3, 7];
+                    case 6: return [2, response_1.response.failed("Failed to delete data storage block(s) because no Persona was found.")];
+                    case 7: return [2];
+                }
+            });
+        });
+    };
+    persona.prototype.addRecentListItem = function (recentlyLoadedPersona) {
+        if (!this.recentList.includes(recentlyLoadedPersona)) {
+            this.recentList.push(recentlyLoadedPersona);
+        }
     };
     persona.prototype.find = function (username, password) {
         if (username === void 0) { username = null; }
@@ -166,175 +488,6 @@ var persona = (function () {
                     case 2:
                         id = _a.sent();
                         return [2, id === null || id === undefined || typeof id !== 'string' ? null : id];
-                }
-            });
-        });
-    };
-    persona.prototype.getRecentList = function () {
-        return this.recentList;
-    };
-    persona.prototype.addRecentListItem = function (recentlyLoadedPersona) {
-        if (!this.recentList.includes(recentlyLoadedPersona)) {
-            this.recentList.push(recentlyLoadedPersona);
-        }
-    };
-    persona.prototype.unload = function () {
-        var tempUsername = this.username;
-        this.current = null;
-        this.username = null;
-        this.password = null;
-        return response_1.response.success("Successfully logged out of the Persona " + tempUsername + ".");
-    };
-    persona.prototype.load = function (username, password, dataMap) {
-        if (username === void 0) { username = null; }
-        if (password === void 0) { password = null; }
-        if (dataMap === void 0) { dataMap = null; }
-        return __awaiter(this, void 0, void 0, function () {
-            var id;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        username = username === null ? this.username : username;
-                        password = password === null ? this.password : password;
-                        return [4, this.find(username, password)];
-                    case 1:
-                        id = _a.sent();
-                        if (!(id !== null)) return [3, 3];
-                        return [4, this.loadFile(this.path + "\\" + id + "\\" + this.root).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
-                                var persona;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            persona = JSON.parse(content);
-                                            return [4, cypher_1.cypher.verify(password + username, persona.password)];
-                                        case 1:
-                                            if (_a.sent()) {
-                                                this.password = password;
-                                                this.username = username;
-                                                this.current = persona;
-                                                if (dataMap != null) {
-                                                }
-                                                else {
-                                                    return [2, true];
-                                                }
-                                            }
-                                            else {
-                                                return [2, false];
-                                            }
-                                            return [2];
-                                    }
-                                });
-                            }); })];
-                    case 2: return [2, _a.sent()];
-                    case 3: return [2, false];
-                }
-            });
-        });
-    };
-    persona.prototype["delete"] = function (username, password) {
-        if (username === void 0) { username = null; }
-        if (password === void 0) { password = null; }
-        return __awaiter(this, void 0, void 0, function () {
-            var id, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        username = username === null ? this.username : username;
-                        password = password === null ? this.password : password;
-                        return [4, this.find(username, password)];
-                    case 1:
-                        id = _b.sent();
-                        if (!(id !== null)) return [3, 6];
-                        _b.label = 2;
-                    case 2:
-                        _b.trys.push([2, 4, , 5]);
-                        return [4, fs.rmdirSync(this.path + "\\" + id, { recursive: true })];
-                    case 3:
-                        _b.sent();
-                        this.unload();
-                        return [2, true];
-                    case 4:
-                        _a = _b.sent();
-                        return [2, false];
-                    case 5: return [3, 7];
-                    case 6: return [2, false];
-                    case 7: return [2];
-                }
-            });
-        });
-    };
-    persona.prototype.create = function (username, password, strength) {
-        if (strength === void 0) { strength = hash_strength_1.hashStrength.medium; }
-        return __awaiter(this, void 0, void 0, function () {
-            var files, checkIfPersonaExists, newID, recoveryId, location, key;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, fs.promises.readdir(this.path)];
-                    case 1:
-                        files = _a.sent();
-                        return [4, this.asyncSome(files, function (personaId) { return __awaiter(_this, void 0, void 0, function () {
-                                var rootFile, _a, _b;
-                                return __generator(this, function (_c) {
-                                    switch (_c.label) {
-                                        case 0:
-                                            _b = (_a = JSON).parse;
-                                            return [4, this.loadFile(this.path + "\\" + personaId + "\\" + this.root)];
-                                        case 1:
-                                            rootFile = _b.apply(_a, [_c.sent()]);
-                                            return [2, username === cypher_1.cypher.decrypt(rootFile.username, password + username)];
-                                    }
-                                });
-                            }); })];
-                    case 2:
-                        checkIfPersonaExists = _a.sent();
-                        if (checkIfPersonaExists)
-                            return [2, Promise.reject('Persona already exists, please select a different username.')];
-                        return [4, this.generatePersonaId().then(function (id) { return id; })];
-                    case 3:
-                        newID = _a.sent();
-                        recoveryId = cypher_1.cypher.generateRecoveryCode();
-                        location = this.path + "\\" + newID;
-                        key = password + username;
-                        return [4, cypher_1.cypher.hash(key, Number(strength.toString())).then(function (hash) { return __awaiter(_this, void 0, void 0, function () {
-                                var newProfile;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            newProfile = {
-                                                id: newID,
-                                                username: cypher_1.cypher.encrypt(username, key),
-                                                password: hash,
-                                                strength: strength,
-                                                profile: cypher_1.cypher.encrypt("{\"firstName\":\"\", \"lastName\":\"\"}", key),
-                                                mfa: "none",
-                                                recovery: cypher_1.cypher.encrypt(key, recoveryId),
-                                                link: []
-                                            };
-                                            this.username = username;
-                                            this.password = password;
-                                            this.current = newProfile;
-                                            this.addRecentListItem({ id: newID, username: username, avatar: null });
-                                            return [4, this.updateFile(location, this.root, JSON.stringify(newProfile))];
-                                        case 1: return [2, _a.sent()];
-                                    }
-                                });
-                            }); })];
-                    case 4: return [2, _a.sent()];
-                }
-            });
-        });
-    };
-    persona.prototype.save = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!(this.current !== null && this.username !== null && this.password !== null)) return [3, 2];
-                        return [4, this.updateFile(this.path + "\\" + this.current.id, this.root, JSON.stringify(this.current))];
-                    case 1: return [2, _a.sent()];
-                    case 2: return [2];
                 }
             });
         });
@@ -433,61 +586,6 @@ var persona = (function () {
             });
         });
     };
-    persona.prototype.loadStorageBlock = function (dataId) {
-        return __awaiter(this, void 0, void 0, function () {
-            var id, getProperId;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.setDataBlockID(dataId, true)];
-                    case 1:
-                        id = _a.sent();
-                        return [4, this.setDataBlockID(dataId, false)];
-                    case 2:
-                        getProperId = (_a.sent()).split("|");
-                        return [4, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.ext).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    return [2, response_1.response.success("Data storage block was loaded successfully. [" + dataId + "]", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
-                                });
-                            }); })];
-                    case 3: return [2, _a.sent()];
-                }
-            });
-        });
-    };
-    persona.prototype.saveStorageBlock = function (dataId, content) {
-        return __awaiter(this, void 0, void 0, function () {
-            var checkIfBlockExists;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.setDataBlockID(dataId)];
-                    case 1:
-                        dataId = _a.sent();
-                        if (this.current === null)
-                            return [2, response_1.response.failed("No profile loaded.")];
-                        if (dataId === undefined || dataId === null)
-                            return [2, response_1.response.failed("No storage id provided.")];
-                        checkIfBlockExists = this.current.link.some(function (item) {
-                            var block = cypher_1.cypher.decrypt(item, _this.password + _this.username).split("|");
-                            return block[1] === _this.appName && block[2] === dataId;
-                        });
-                        if (!!checkIfBlockExists) return [3, 3];
-                        return [4, this.createStorageBlock(dataId, content)];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3:
-                        if (!checkIfBlockExists) return [3, 5];
-                        return [4, this.updateStorageBlock(dataId, content)];
-                    case 4:
-                        _a.sent();
-                        _a.label = 5;
-                    case 5: return [2, response_1.response.success("Data storage block was saved successfully. [" + dataId + "]")];
-                }
-            });
-        });
-    };
     persona.prototype.setDataBlockID = function (unknown, encrypt) {
         if (encrypt === void 0) { encrypt = false; }
         return __awaiter(this, void 0, void 0, function () {
@@ -527,106 +625,43 @@ var persona = (function () {
     };
     persona.prototype.createStorageBlock = function (id, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var filename, personaLocation, blockContent, err_1;
+            var personaLocation, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        filename = id.split("|")[0];
+                        _a.trys.push([0, 3, , 4]);
                         personaLocation = this.path + "\\" + this.current.id;
                         this.current.link.push(cypher_1.cypher.encrypt(id, this.password + this.username));
-                        _a.label = 1;
+                        return [4, this.updateFile(personaLocation, "" + id.split("|")[0] + this.ext, cypher_1.cypher.encrypt(content, this.password + this.username))];
                     case 1:
-                        _a.trys.push([1, 4, , 5]);
-                        blockContent = cypher_1.cypher.encrypt(content, this.password + this.username);
-                        return [4, this.updateFile(personaLocation, "" + filename + this.ext, blockContent)];
-                    case 2:
                         _a.sent();
                         return [4, this.updateFile(personaLocation, this.root, JSON.stringify(this.current))];
-                    case 3:
+                    case 2:
                         _a.sent();
-                        Promise.resolve(true);
-                        return [3, 5];
-                    case 4:
+                        return [2, response_1.response.success("Data storage block successfully created.")];
+                    case 3:
                         err_1 = _a.sent();
-                        Promise.reject(err_1);
-                        return [3, 5];
-                    case 5: return [2];
+                        return [2, response_1.response.failed("Data storage block " + id[2] + " failed to create successfully.")];
+                    case 4: return [2];
                 }
             });
         });
     };
     persona.prototype.updateStorageBlock = function (id, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var personaLocation, blockContent, err_2;
-            var _this = this;
+            var err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        id = this.current.link.find(function (item) {
-                            var block = cypher_1.cypher.decrypt(item, _this.password + _this.username).split(":");
-                            return block[1] === _this.appName && block[2] === id;
-                        });
-                        personaLocation = this.path + "\\" + this.current.id;
-                        _a.label = 1;
+                        _a.trys.push([0, 2, , 3]);
+                        return [4, this.updateFile(this.path + "\\" + this.current.id, "" + id.split("|")[0] + this.ext, cypher_1.cypher.encrypt(content, this.password + this.username))];
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
-                        blockContent = cypher_1.cypher.encrypt(JSON.stringify(content), this.password + this.username);
-                        return [4, this.updateFile(personaLocation, "" + id.split(":")[0] + this.ext, blockContent)];
-                    case 2:
                         _a.sent();
-                        Promise.resolve(true);
-                        return [3, 4];
-                    case 3:
-                        err_2 = _a.sent();
-                        Promise.reject(err_2);
-                        return [3, 4];
-                    case 4: return [2];
-                }
-            });
-        });
-    };
-    persona.prototype.deleteStorageBlock = function (dataId) {
-        if (dataId === void 0) { dataId = null; }
-        return __awaiter(this, void 0, void 0, function () {
-            var personaId, files;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.find(this.username, this.password)];
-                    case 1:
-                        personaId = _a.sent();
-                        return [4, this.setDataBlockID(dataId)];
+                        return [2, response_1.response.success("Data storage block " + id[2] + " successfully updated.")];
                     case 2:
-                        dataId = _a.sent();
-                        if (!(personaId !== null)) return [3, 6];
-                        if (!(dataId === null)) return [3, 4];
-                        return [4, fs.promises.readdir(this.path + "\\" + personaId)];
-                    case 3:
-                        files = _a.sent();
-                        try {
-                            files.forEach(function (file) {
-                                if (file !== _this.root) {
-                                    fs.unlinkSync(_this.path + "\\" + personaId + "\\" + file);
-                                }
-                            });
-                            return [2, response_1.response.success("Successfully deleted all storage blocks.")];
-                        }
-                        catch (_b) {
-                            return [2, response_1.response.failed("Could not find any storage blocks to delete.")];
-                        }
-                        return [3, 5];
-                    case 4:
-                        try {
-                            fs.unlinkSync(this.path + "\\" + personaId + "\\" + (dataId.split('|')[0]) + this.ext);
-                            return [2, response_1.response.success("Successfully deleted data storage block.[" + dataId + "]")];
-                        }
-                        catch (err) {
-                            return [2, response_1.response.failed("Failed to find the data storage block.[" + dataId + "]")];
-                        }
-                        _a.label = 5;
-                    case 5: return [3, 7];
-                    case 6: return [2, response_1.response.failed("Failed to delete data storage block(s) because no persona was found.")];
-                    case 7: return [2];
+                        err_2 = _a.sent();
+                        return [2, response_1.response.failed("Data storage block " + id[2] + " failed to update successfully.")];
+                    case 3: return [2];
                 }
             });
         });

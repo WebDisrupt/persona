@@ -5,10 +5,10 @@ export class response {
     /**
      * A successful response
      * @param message - Detailed message relevant to the status
-     * @param data - (optional) used for passing back data
+     * @param data - (optional) used for passing back data can be string or object
      * @returns [status, message, data]
      */
-    public static success( message: string, data: string = null){
+    public static success( message: string, data: any = null){
         return { status: true, message: message, data: data };
     }
 
@@ -17,8 +17,8 @@ export class response {
      * @param message - Detailed message relevant to the status
      * @returns [status, message]
      */
-    public static failed( message: string ){
-        return { status: false, message: message };
+    public static failed( message: string, data: any = null ){
+        return { status: false, message: message, data:data };
     }
 
 }

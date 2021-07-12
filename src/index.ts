@@ -2,23 +2,19 @@
  * Persona - Personal information storage, privacy, and security
  */
 import { hashStrength, hashStrengthDetails } from './models/hash-strength';
-import { personaRoot, personaSeed } from './models/persona-root';
+import { personaRoot, personaSeed, personaOptions } from './models/persona-root';
+import { profile, profileAttribute } from './models/profile';
 import { cypher } from './modules/cypher';
 import { response } from './modules/response';
-export { hashStrength, hashStrengthDetails } from './models/hash-strength';
-export { personaRoot, personaSeed } from './models/persona-root';
-export { personaHelpers } from './modules/helpers';
+
+// Export some models for referencing
+export { hashStrength, hashStrengthDetails };
+export { personaRoot, personaSeed, personaOptions };
+export { profile, profileAttribute };
 
 let uuid = require('uuid-random');
 var fs = require("fs");
 var path = require("path");
-
-export interface personaOptions { 
-    appName?:string,
-    path?:string,
-    previous?: string,
-    recentList?:Array<personaSeed>
-}
 
 export class persona {
 
@@ -26,53 +22,47 @@ export class persona {
     private readonly ext : string = ".pstore"; // The extention for personas data storage
     private appName : string = "default"; // Your application name
     private path : string = "C:\\personas"; // Current Personas folder location
+    private current: personaRoot = null; // The currently loaded Persona (Decrypted/unusable)
     private recentList : Array<personaSeed> = []; // A list of all recently loaded personas
-    private current: personaRoot = null; // The currently loaded persona
-    private username : string = null; // The current temp username
-    private password: string = null; // The current temp password
+    private previous: personaSeed = null; // Last opened Persona (usable)
+    private profile: profile = null; // Stores version of profile data (usable)
+    private username : string = null; // The current temp username (usable)
+    private password: string = null; // The current temp password (usable)
 
+    /**
+     * Constructor - Used to assign personaOptions.
+     * @param options 
+     */
     public constructor(options:personaOptions = null){
         if(options?.path !== undefined) this.path = options.path;
         if(options?.recentList !== undefined) this.recentList = options.recentList;
         if(options?.previous !== undefined){
-         this.username = options.previous;
-         // TODO load previous
+         this.username = options.previous.username;
+         this.previous = options.previous;
         }
         if(options?.appName !== undefined) this.appName = options.appName;
     }
 
-    public discovery() : string {
-        if(this.username != null){
-            return this.username;
-        } return null;
-    }
-
-    public isLoggedIn() : boolean{
-        return this.username != null && this.password != null ? true : false;
-    }
-
-    public switch( username : string, password:string ){
-        this.username = username;
-        this.username = password;
-        this.load();
-    }
-
-
     /**
-     * Find a persona with username and password
+     * Return a bool that represents if a new user is logged in.
      * @param username 
      * @param password 
-     * @returns 
      */
-    private async find(username:string = null, password:string = null){
-        if(this.current !== null && password === this.password && username === this.username) return this.current.id
-        let files : Array<string> = await fs.promises.readdir(this.path);
-        let id = null;
-        id = await this.asyncFind(files, async (personaId:string) => {
-            let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
-            return username === cypher.decrypt(rootFile.username, password+username);
-        });
-        return id === null || id === undefined || typeof id  !== 'string' ? null : id;
+    public isLoggedIn() {
+        return this.username != null && this.password != null ? response.success(`${this.username} is currently logged in`) : 
+        this.previous !== null ? response.failed(`${this.previous.username} is not currently logged in.`) : response.failed(`No user is currently logged in.`);
+    }
+
+    /**
+     * Switches to a new profile
+     * @param username 
+     * @param password 
+     */
+    public switch( username : string, password:string ){
+        this.unload();
+        this.username = username;
+        this.username = password;
+        return this.load();
     }
 
     /**
@@ -80,13 +70,7 @@ export class persona {
      * @returns 
      */
     public getRecentList(){
-        return this.recentList;
-    }
-
-    public addRecentListItem( recentlyLoadedPersona : personaSeed ){
-        if(!this.recentList.includes(recentlyLoadedPersona)){
-            this.recentList.push(recentlyLoadedPersona);
-        }
+        return this.recentList !== null ? response.success(`Success, ${this.recentList.length} Prsonas found.`, this.recentList) : response.failed(`Could not find any recently loaded Prsonas.`);
     }
 
     /**
@@ -94,23 +78,29 @@ export class persona {
      * @returns 
      */
     public unload(){
-        let tempUsername = this.username;
+        if(this.current === null) return response.failed(`Persona cannot be unloaded because no Persona loaded.`);
+        this.previous = { 
+            id: this.current.id, 
+            username: this.username, 
+            avatar: this.profile?.avatar != null ? this.profile.avatar : null 
+        }; // TODO save previous somewhere for future reference
         this.current = null;
         this.username = null;
         this.password = null;
-        return response.success(`Successfully logged out of the Persona ${tempUsername}.`);
+        this.profile = null;
+        return response.success(`Successfully logged out of the Persona ${this.previous.username}.`);
     }
 
     /**
-     * Find Persona based on username. Use password to decrypt. Load storage blocks based on datamap parameter.
-     * @param username - Unique username associated with the persona
-     * @param password - Master password associated with the persona
-     * @param dataMap - Only pull back the sorage blocks you need
+     * Find Persona based on username. Use password to decrypt. Load additional storage blocks based on datamap parameter.
+     * @param username - Unique username associated with the Persona.
+     * @param password - Master password associated with the Persona.
+     * @param dataMap - Only pull back the sorage blocks you need to get started.
      */
     public async load(username: string = null, password:string = null, dataMap: Array<string> = null){
+        if(this.username !== username && this.password !== password) this.unload();
         username = username === null ? this.username : username;
         password = password === null ? this.password : password;
-
         let id = await this.find(username, password);
         if(id !== null){
             return await this.loadFile(this.path+"\\"+id+"\\"+this.root).then( async (content) => {
@@ -119,27 +109,22 @@ export class persona {
                         this.password = password;
                         this.username = username;
                         this.current = persona;
-                        if(dataMap != null){
-                           /* dataMap.forEach((block:string) => {
-                                block                            
-                            }); */
-                        } else {
-                            return true;
-                        }
+                        this.profile = JSON.parse(cypher.decrypt(persona.profile, password+username));
+                        return response.success(`${username}, Welcome back.`, dataMap !== null ? (await this.loadStorageBlocks(dataMap)).data : null);
                     } else {
-                        return false;
+                        return response.failed("The username or password is incorrect.");
                     }          
             });
         } else {
-            return false;
+            return response.failed("The username or password is incorrect.");
         }
     }
 
-   /**
-    * Delete a persona and all data storage
-    * @param username (optional) - Needed for creating a new persona, before saving
-    * @param password (optional) - Needed for creating a new persona, before saving
-    */
+    /**
+     * Delete a Persona and all data storage.
+     * @param username (optional) - Needed for creating a new Persona, before saving.
+     * @param password (optional) - Needed for creating a new Persona, before saving.
+     */
     public async delete(username: string = null, password: string = null){
         username = username === null ? this.username : username;
         password = password === null ? this.password : password;
@@ -148,29 +133,30 @@ export class persona {
             try{
                 await fs.rmdirSync(this.path+"\\"+id, { recursive: true });
                 this.unload();
-                return true;
+                return response.success(`${username}'s Persona has been deleted.`);
             } catch {
-                return false;
+                return response.failed("Something failed when deleting this Persona.");
             }
         } else {
-            return false;
+            return response.failed("Could not find a valid Persona or it has already been deleted.");
         }
     }
 
     /**
-     * Allows users to create a new Persona
-     * @param username - useranme
-     * @param password - password
-     * @param strength - (optional) Passsword Hashing Strength
+     * Allows users to create a new Persona.
+     * @param username - useranme required to create new Persona.
+     * @param password - password required to secure new Persona.
+     * @param strength - (optional) Passsword Hashing Strength.
+     * @returns Response object contains a one-time recovery code as the data property
      */
-       public async create (username: string, password: string, strength:hashStrength = hashStrength.medium) : Promise<any> {
+    public async create (username: string, password: string, strength:hashStrength = hashStrength.medium) : Promise<any> {
         let files : Array<string> = await fs.promises.readdir(this.path);
         let checkIfPersonaExists = await this.asyncSome(files, async (personaId:string) => {
             let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
             return username === cypher.decrypt(rootFile.username, password+username);
         });
 
-        if(checkIfPersonaExists) return Promise.reject('Persona already exists, please select a different username.');
+        if(checkIfPersonaExists) return response.failed('Persona ${username} already exists, please select a different username.');
         let newID = await this.generatePersonaId().then((id:string) => { return id; });
         let recoveryId = cypher.generateRecoveryCode();
         let location = `${this.path}\\${newID}`;
@@ -189,21 +175,158 @@ export class persona {
             this.username = username;
             this.password = password;
             this.current = newProfile;
-            this.addRecentListItem({ id: newID, username : username, avatar: null });
-            return await this.updateFile(location, this.root, JSON.stringify(newProfile));
+            this.addRecentListItem({ id: newID, username : username, avatar: null, location: location });
+            let newRes = await this.updateFile(location, this.root, JSON.stringify(newProfile));
+            return newRes ? response.success("Persona ${this.username} successfully created.", recoveryId) : response.failed("Persona ${this.username} failed to be created. Please check folder permissions.") ;
         });
     }
 
-   /**
-    * Save the currently loading persona
-    * @param username (optional) - Needed for creating a new persona, before saving
-    * @param password (optional) - Needed for creating a new persona, before saving
-    */
+    /**
+     * Save the currently loaded Persona.
+     * @param username (optional) - Needed for creating a new Persona, before saving.
+     * @param password (optional) - Needed for creating a new Persona, before saving.
+     */
     public async save(){
         if( this.current !== null && this.username !== null && this.password !== null){
-            return await this.updateFile(`${this.path}\\${this.current.id}`, this.root, JSON.stringify(this.current));
+            let newRes = await this.updateFile(`${this.path}\\${this.current.id}`, this.root, JSON.stringify(this.current));
+            return newRes ? response.success("Persona ${this.username} successfully created.") : response.failed("Persona ${this.username} failed to be created. Please check folder permissions.") ;
+        } else {
+            return response.failed('Persona failed to be saved. No Persona is active.');
         }
     }
+
+    /**
+     * Get the current Persona's profile details
+     * @returns 
+     */
+    public getProfile(){
+        return this.profile === null ? response.failed(`No current profile exists.`) : response.success(`${this.username}'s profile has been loaded successfully.`, this.profile);
+    }
+
+    /**
+     * Save Persona's profile details
+     * @returns 
+     */
+    public saveProfile(newProfile: profile){
+        if(this.username === null || this.password === null) return response.failed(`No current profile exists.`) 
+        this.profile = newProfile;
+        this.current.profile = cypher.encrypt(JSON.stringify(newProfile), this.password+this.username);
+        return response.success(`${this.username}'s profile was saved successfully.`);
+    }
+    
+    /**
+     * Loads multiple storage blocks based on a data map.
+     * @param dataIdMap A collection of ids that will load a collection of data.
+     * @returns 
+     */
+    public async loadStorageBlocks(dataIdMap : Array<string>){
+        let collection : Array<any>;
+        for(let dataId in dataIdMap){
+            let item = await this.loadStorageBlock(dataId);
+            collection.push(item.status === true ? item.data : null);
+        };
+        return response.success(`Data storage blocks loaded successfully.`, collection);
+    }
+
+    /**
+     * Loads a block of data form an existing block.
+     * @param dataId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
+     * @returns 
+     */
+    public async loadStorageBlock(dataId : string){
+        let id = await this.setDataBlockID(dataId, true);
+        let getProperId = (await this.setDataBlockID(dataId, false)).split("|");
+        return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.ext}`).then( async (content) => {
+            return response.success(`Data storage block was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
+        });
+    }
+
+    /**
+     * Saves a block of data to an existing block or creates a new block.
+     * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
+     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
+     * @returns 
+     */
+    public async saveStorageBlock(dataId: string, content:string){
+        dataId = await this.setDataBlockID(dataId);
+        if(this.current === null) return response.failed("No profile loaded.");
+        if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");
+        let checkIfBlockExists = this.current.link.some( item => {
+            let block = cypher.decrypt(item, this.password+this.username).split("|");
+            return block[1] === this.appName && block[2] === dataId;
+        });
+        let newRes = checkIfBlockExists ? await this.updateStorageBlock(dataId, content) : await this.createStorageBlock(dataId, content);
+        if(newRes.status === true){
+            return response.success(`Data storage block ${dataId[2]} was saved successfully.`);
+        } else {
+            return newRes;
+        }
+    }
+
+    /**
+     * Delete a storage block
+     * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
+     */
+    public async deleteStorageBlock(dataId : string = null) {
+        let personaId = await this.find(this.username, this.password);
+        dataId = await this.setDataBlockID(dataId);
+        if(personaId !== null){
+            if(dataId === null){
+                let files : Array<string> = await fs.promises.readdir(this.path+"\\"+personaId);
+                try{
+                    files.forEach( file => {
+                        if(file !== this.root){
+                            fs.unlinkSync(this.path+"\\"+personaId+"\\"+file);
+                        }
+                    });
+                    return response.success(`Successfully deleted all storage blocks.`);
+                } catch {
+                    return response.failed(`Could not find any storage blocks to delete.`);
+                }
+            } else {
+                try {
+                    fs.unlinkSync(this.path+"\\"+personaId+"\\"+(dataId.split('|')[0])+this.ext);
+                    return response.success(`Successfully deleted data storage block.[${dataId}]`);
+            } catch (err) {
+                    return response.failed(`Failed to find the data storage block.[${dataId}]`);
+                }
+            }
+        } else {
+            return response.failed(`Failed to delete data storage block(s) because no Persona was found.`);
+        }
+    }
+
+
+
+    /// Private functions used for internal modifications only
+
+    /**
+     * Add a new entry to the recently loaded list.
+     * @param recentlyLoadedPersona 
+     */
+    private addRecentListItem( recentlyLoadedPersona : personaSeed ){
+        if(!this.recentList.includes(recentlyLoadedPersona)){
+            this.recentList.push(recentlyLoadedPersona);
+        }
+    }
+
+    /**
+     * Find a Persona with username and password
+     * @param username 
+     * @param password 
+     * @returns 
+     */
+    private async find(username:string = null, password:string = null){
+        if(this.current !== null && password === this.password && username === this.username) return this.current.id
+        let files : Array<string> = await fs.promises.readdir(this.path);
+        let id = null;
+        id = await this.asyncFind(files, async (personaId:string) => {
+            let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
+            return username === cypher.decrypt(rootFile.username, password+username);
+        });
+        return id === null || id === undefined || typeof id  !== 'string' ? null : id;
+    }
+
 
     /**
      * Save updates to an existing file. If that files doesn't exsist then it creates the file and recursive folder structure.
@@ -212,7 +335,7 @@ export class persona {
      * @param data - The data needing to be saved
      * @returns true or error
      */
-    private async updateFile(path:string, filename:string, data:string) :  Promise<any>{
+     private async updateFile(path:string, filename:string, data:string) :  Promise<any>{
         let errorMsg = "Failed to save file, please make sure this Application has the correct permissions.";
         return await new Promise(function(resolve, reject) {
             if(!fs.existsSync(path)){
@@ -302,39 +425,6 @@ export class persona {
         return newId;
     }
 
-
-    /**
-     * Loads a block of data form an existing block
-     * @param data The id property is required to identify the blocks purpose and if it already exists.
-     * @returns 
-     */
-     public async loadStorageBlock(dataId : string){
-        let id = await this.setDataBlockID(dataId, true);
-        let getProperId = (await this.setDataBlockID(dataId, false)).split("|");
-        return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.ext}`).then( async (content) => {
-            return response.success(`Data storage block was loaded successfully. [${dataId}]`, cypher.decrypt(content.toString(), this.password+this.username));
-        });
-     }
-
-    /**
-     * Saves a block of data to an existing block or creates a new block
-     * @param id - Required to identify where, how, and when this data will be used in your application.
-     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
-     * @returns 
-     */
-    public async saveStorageBlock(dataId: string, content:string){
-        dataId = await this.setDataBlockID(dataId);
-        if(this.current === null) return response.failed("No profile loaded.");
-        if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");
-        let checkIfBlockExists = this.current.link.some( item => {
-            let block = cypher.decrypt(item, this.password+this.username).split("|");
-            return block[1] === this.appName && block[2] === dataId;
-        });
-        if(!checkIfBlockExists) await this.createStorageBlock(dataId, content)
-        if(checkIfBlockExists) await this.updateStorageBlock(dataId, content)
-        return response.success(`Data storage block was saved successfully. [${dataId}]`);
-    }
-
     /**
      * Returns a properly formated data block id. You can pass in an encrypted, or decrypted version, or just a data block name.
      * @param unkown Takes an id in an unknown state
@@ -361,72 +451,34 @@ export class persona {
     }
 
     /**
-     * Creates a new storage block
-     * @param dataBlock  [ id: string, content: string ]
+     * Creates a new storage block, can't be called directly.
+     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
+     * @param content - contains a string of important data that is saved
      */
     private async createStorageBlock(id: string, content:string){ 
-        let filename = id.split("|")[0];
-        let personaLocation = `${this.path}\\${this.current.id}`;
-        this.current.link.push( cypher.encrypt(id, this.password+this.username) );
         try {
-            let blockContent = cypher.encrypt(content, this.password+this.username);
-            await this.updateFile(personaLocation, `${filename}${this.ext}`, blockContent);
+            let personaLocation = `${this.path}\\${this.current.id}`;
+            this.current.link.push( cypher.encrypt(id, this.password+this.username) );
+            await this.updateFile(personaLocation, `${id.split("|")[0]}${this.ext}`, cypher.encrypt(content, this.password+this.username));
             await this.updateFile(personaLocation, this.root, JSON.stringify(this.current));
-            Promise.resolve(true);
+            return response.success(`Data storage block successfully created.`);
         } catch (err) {
-            Promise.reject(err);
+            return response.failed(`Data storage block ${id[2]} failed to create successfully.`);
         }
     }
 
     /**
-     * Updates an existing Storage block
-     * @param data 
+     * Updates an existing Storage block, can't be called directly.
+     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
+     * @param content - contains a string of important data that is saved
      */
     private async updateStorageBlock(id: string, content:string){
-        id = this.current.link.find( item => {
-            let block = cypher.decrypt(item, this.password+this.username).split(":");
-            return block[1] === this.appName && block[2] === id;
-        });
-        let personaLocation = `${this.path}\\${this.current.id}`;
         try {
-            let blockContent = cypher.encrypt(JSON.stringify(content), this.password+this.username);
-            await this.updateFile(personaLocation, `${id.split(":")[0]}${this.ext}`, blockContent);
-            Promise.resolve(true);
+            await this.updateFile(`${this.path}\\${this.current.id}`, `${id.split("|")[0]}${this.ext}`, cypher.encrypt(content, this.password+this.username));
+            return response.success(`Data storage block ${id[2]} successfully updated.`);
         } catch (err) {
-            Promise.reject(err);
+            return response.failed(`Data storage block ${id[2]} failed to update successfully.`);
         }
     }
 
-    /**
-    * Delete a storage block
-    * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks.
-    */
-    public async deleteStorageBlock(dataId : string = null) {
-        let personaId = await this.find(this.username, this.password);
-        dataId = await this.setDataBlockID(dataId);
-        if(personaId !== null){
-            if(dataId === null){
-                let files : Array<string> = await fs.promises.readdir(this.path+"\\"+personaId);
-                try{
-                    files.forEach( file => {
-                        if(file !== this.root){
-                            fs.unlinkSync(this.path+"\\"+personaId+"\\"+file);
-                        }
-                    });
-                    return response.success(`Successfully deleted all storage blocks.`);
-                } catch {
-                    return response.failed(`Could not find any storage blocks to delete.`);
-                }
-            } else {
-                try {
-                    fs.unlinkSync(this.path+"\\"+personaId+"\\"+(dataId.split('|')[0])+this.ext);
-                    return response.success(`Successfully deleted data storage block.[${dataId}]`);
-               } catch (err) {
-                    return response.failed(`Failed to find the data storage block.[${dataId}]`);
-                }
-            }
-        } else {
-            return response.failed(`Failed to delete data storage block(s) because no persona was found.`);
-        }
-    }
 }

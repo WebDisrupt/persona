@@ -70,9 +70,9 @@ var cypher = (function () {
         key = this.getKey(key);
         var encrypted = CryptoJS.AES.encrypt(text, key).toString();
         if (this.debug)
-            console.log("Input: ", text);
+            console.log("encrypt -> input: ", text);
         if (this.debug)
-            console.log("Output: ", encrypted);
+            console.log("encrypt -> output: ", encrypted);
         if (this.debug)
             return text;
         return encrypted;
@@ -87,13 +87,22 @@ var cypher = (function () {
         catch (err) {
             decrypted = "";
         }
-        if (this.debug)
-            console.log("Input: ", text);
-        if (this.debug)
-            console.log("Output: ", CryptoJS.enc.Utf8.stringify(decrypted));
-        if (this.debug)
-            return text;
-        return decrypted === undefined || decrypted === "" ? "" : CryptoJS.enc.Utf8.stringify(decrypted);
+        try {
+            if (this.debug)
+                console.log("decrypt -> input: ", text);
+            if (this.debug)
+                console.log("decrypt -> output: ", CryptoJS.enc.Utf8.stringify(decrypted));
+            if (this.debug)
+                return text;
+            return CryptoJS.enc.Utf8.stringify(decrypted);
+        }
+        catch (err) {
+            if (this.debug)
+                console.log("decrypt -> failed: ", err);
+            if (this.debug)
+                return text;
+            return "";
+        }
     };
     cypher.hash = function (password, strength) {
         if (strength === void 0) { strength = 3; }

@@ -8,7 +8,6 @@ const username = "john@doe.com";
 const password = "123456";
 let personaInstance = new persona({ appName: "default-app"});
 
-
 beforeEach(() => {
     return personaInstance.create(username, password, 1);
 });
@@ -18,17 +17,16 @@ afterEach(() => {
 
 /// Persona Actions
 test("Create new Persona and load it", async ()=>{
-    expect(await personaInstance.load(username, password)).toBe(true);
+    expect((await personaInstance.load(username, password)).status).toBe(true);
 });
 
 test("Update a Persona", async ()=>{
-    // TODO Create update and save to check it
-    expect(await personaInstance.save()).toBe(true);
+    expect((await personaInstance.save()).status).toBe(true);
 });
 
 test("Check recently loaded list.", async ()=>{
     let recentlyLoadedPersonas = personaInstance.getRecentList();
-    expect(recentlyLoadedPersonas[0].username).toBe(username);
+    expect(recentlyLoadedPersonas.data[0].username).toBe(username);
 }); 
 
 test("unload persona", ()=>{
@@ -37,13 +35,18 @@ test("unload persona", ()=>{
 
 test("Delete a persona that dsoes exist", async ()=>{
     await personaInstance.delete(username, password);
-    expect(await personaInstance.load(username, password)).toBe(false);
+    expect((await personaInstance.load(username, password)).status).toBe(false);
 });
 
 test("Delete a persona that doesn't exist", async ()=>{
     await personaInstance.delete(username, password);
-    expect(await personaInstance.delete(username, password)).toBe(false);
+    expect((await personaInstance.delete(username, password)).status).toBe(false);
 });
+
+
+// TODO Save profile 
+
+// TODO Get profile 
 
 
 /// Persona Data Storage Actions
