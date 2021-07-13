@@ -150,13 +150,14 @@ export class persona {
      * @returns Response object contains a one-time recovery code as the data property
      */
     public async create (username: string, password: string, strength:hashStrength = hashStrength.medium) : Promise<any> {
+        this.unload();
         let files : Array<string> = await fs.promises.readdir(this.path);
         let checkIfPersonaExists = await this.asyncSome(files, async (personaId:string) => {
             let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
             return username === cypher.decrypt(rootFile.username, password+username);
         });
 
-        if(checkIfPersonaExists) return response.failed('Persona ${username} already exists, please select a different username.');
+        if(checkIfPersonaExists) return response.failed(`Persona ${username} already exists, please select a different username.`);
         let newID = await this.generatePersonaId().then((id:string) => { return id; });
         let recoveryId = cypher.generateRecoveryCode();
         let location = `${this.path}\\${newID}`;
@@ -177,7 +178,7 @@ export class persona {
             this.current = newProfile;
             this.addRecentListItem({ id: newID, username : username, avatar: null, location: location });
             let newRes = await this.updateFile(location, this.root, JSON.stringify(newProfile));
-            return newRes ? response.success("Persona ${this.username} successfully created.", recoveryId) : response.failed("Persona ${this.username} failed to be created. Please check folder permissions.") ;
+            return newRes ? response.success(`Persona ${this.username} successfully created.`, recoveryId) : response.failed(`Persona ${this.username} failed to be created. Please check folder permissions.`) ;
         });
     }
 
@@ -189,7 +190,7 @@ export class persona {
     public async save(){
         if( this.current !== null && this.username !== null && this.password !== null){
             let newRes = await this.updateFile(`${this.path}\\${this.current.id}`, this.root, JSON.stringify(this.current));
-            return newRes ? response.success("Persona ${this.username} successfully created.") : response.failed("Persona ${this.username} failed to be created. Please check folder permissions.") ;
+            return newRes ? response.success(`Persona ${this.username} successfully created.`) : response.failed(`Persona ${this.username} failed to be created. Please check folder permissions.`) ;
         } else {
             return response.failed('Persona failed to be saved. No Persona is active.');
         }

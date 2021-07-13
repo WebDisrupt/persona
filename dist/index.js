@@ -233,7 +233,9 @@ var persona = (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, fs.promises.readdir(this.path)];
+                    case 0:
+                        this.unload();
+                        return [4, fs.promises.readdir(this.path)];
                     case 1:
                         files = _a.sent();
                         return [4, this.asyncSome(files, function (personaId) { return __awaiter(_this, void 0, void 0, function () {
@@ -252,7 +254,7 @@ var persona = (function () {
                     case 2:
                         checkIfPersonaExists = _a.sent();
                         if (checkIfPersonaExists)
-                            return [2, response_1.response.failed('Persona ${username} already exists, please select a different username.')];
+                            return [2, response_1.response.failed("Persona " + username + " already exists, please select a different username.")];
                         return [4, this.generatePersonaId().then(function (id) { return id; })];
                     case 3:
                         newID = _a.sent();
@@ -281,7 +283,7 @@ var persona = (function () {
                                             return [4, this.updateFile(location, this.root, JSON.stringify(newProfile))];
                                         case 1:
                                             newRes = _a.sent();
-                                            return [2, newRes ? response_1.response.success("Persona ${this.username} successfully created.", recoveryId) : response_1.response.failed("Persona ${this.username} failed to be created. Please check folder permissions.")];
+                                            return [2, newRes ? response_1.response.success("Persona " + this.username + " successfully created.", recoveryId) : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
                                     }
                                 });
                             }); })];
@@ -300,7 +302,7 @@ var persona = (function () {
                         return [4, this.updateFile(this.path + "\\" + this.current.id, this.root, JSON.stringify(this.current))];
                     case 1:
                         newRes = _a.sent();
-                        return [2, newRes ? response_1.response.success("Persona ${this.username} successfully created.") : response_1.response.failed("Persona ${this.username} failed to be created. Please check folder permissions.")];
+                        return [2, newRes ? response_1.response.success("Persona " + this.username + " successfully created.") : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
                     case 2: return [2, response_1.response.failed('Persona failed to be saved. No Persona is active.')];
                 }
             });
