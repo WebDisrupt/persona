@@ -6,7 +6,9 @@ var fs = require("fs");
 
 const username = "john@doe.com"; 
 const password = "123456";
-let personaInstance = new persona({ appName: "default-app"});
+const path = "C:\\personas-test";
+fs.rmdirSync(path, { recursive: true }); // Removes directory to test creating a new one
+let personaInstance = new persona({ appName: "default-app", path: path});
 
 beforeEach(() => {
     return personaInstance.create(username, password, 1);
@@ -29,8 +31,8 @@ test("Check recently loaded list.", async ()=>{
     expect(recentlyLoadedPersonas.data[0].username).toBe(username);
 }); 
 
-test("unload persona", ()=>{
-    expect(personaInstance.unload().status).toBe(true);
+test("unload persona", async ()=>{
+    expect((await personaInstance.unload()).status).toBe(true);
 });
 
 test("Delete a persona that dsoes exist", async ()=>{
@@ -76,3 +78,5 @@ test("Delete a data storage block(s)", async ()=>{
     await personaInstance.saveStorageBlock(thisId2, thisContent);
     expect((await personaInstance.deleteStorageBlock()).status).toBe(true);
 });
+
+//fs.rmdirSync(path, { recursive: true }); // Removes directory to test creating a new one

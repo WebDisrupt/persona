@@ -7,6 +7,8 @@ export { profile, profileAttribute };
 export declare class persona {
     private readonly root;
     private readonly ext;
+    private readonly blockExt;
+    private readonly system;
     private appName;
     private path;
     private current;
@@ -21,6 +23,21 @@ export declare class persona {
         message: string;
         data: any;
     };
+    getUsername(): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
+    getProfile(): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
+    saveProfile(newProfile: profile): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
     switch(username: string, password: string): Promise<{
         status: boolean;
         message: string;
@@ -31,11 +48,22 @@ export declare class persona {
         message: string;
         data: any;
     };
-    unload(): {
+    private addRecentListItem;
+    systemLoad(): {
         status: boolean;
         message: string;
         data: any;
     };
+    systemSave(): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
+    unload(): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
     load(username?: string, password?: string, dataMap?: Array<string>): Promise<{
         status: boolean;
         message: string;
@@ -52,16 +80,6 @@ export declare class persona {
         message: string;
         data: any;
     }>;
-    getProfile(): {
-        status: boolean;
-        message: string;
-        data: any;
-    };
-    saveProfile(newProfile: profile): {
-        status: boolean;
-        message: string;
-        data: any;
-    };
     loadStorageBlocks(dataIdMap: Array<string>): Promise<{
         status: boolean;
         message: string;
@@ -82,7 +100,6 @@ export declare class persona {
         message: string;
         data: any;
     }>;
-    private addRecentListItem;
     private find;
     private updateFile;
     private asyncSome;

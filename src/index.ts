@@ -3,6 +3,7 @@
  */
 import { hashStrength, hashStrengthDetails } from './models/hash-strength';
 import { personaRoot, personaSeed, personaOptions } from './models/persona-root';
+import { systemData }  from './models/system';
 import { profile, profileAttribute } from './models/profile';
 import { cypher } from './modules/cypher';
 import { response } from './modules/response';
@@ -18,8 +19,10 @@ var path = require("path");
 
 export class persona {
 
-    private readonly root : string = "root.persona"; // The root file naming convention
-    private readonly ext : string = ".pstore"; // The extention for personas data storage
+    private readonly root : string = "root"; // The root file naming convention
+    private readonly ext : string = ".persona"; // The extention for personas data storage
+    private readonly blockExt : string = ".pstore"; // The extention for personas data storage
+    private readonly system : string = "system"; // The system file naming convention
     private appName : string = "default"; // Your application name
     private path : string = "C:\\personas"; // Current Personas folder location
     private current: personaRoot = null; // The currently loaded Persona (Decrypted/unusable)
@@ -36,17 +39,30 @@ export class persona {
     public constructor(options:personaOptions = null){
         if(options?.path !== undefined) this.path = options.path;
         if(options?.recentList !== undefined) this.recentList = options.recentList;
-        if(options?.previous !== undefined){
-         this.username = options.previous.username;
-         this.previous = options.previous;
+        if(options?.previous !== undefined ){
+            this.username = options.previous.username;
+            this.previous = options.previous;
         }
         if(options?.appName !== undefined) this.appName = options.appName;
+        
+        // If nothing passed in by parameter then load and use system data
+        let systemData = this.systemLoad();
+        if(systemData.status){
+            if(options?.recentList === undefined || options?.recentList === null){
+                this.recentList = systemData.data.recentList;
+            } 
+            if(options?.previous === undefined || options?.previous === null){
+                this.username = systemData.data.previous.username;
+                this.previous = systemData.data.previous;
+            }
+        }
+
+        // Create directory
+        if(!fs.existsSync(this.path)) fs.mkdirSync(this.path, { recursive: true });
     }
 
     /**
      * Return a bool that represents if a new user is logged in.
-     * @param username 
-     * @param password 
      */
     public isLoggedIn() {
         return this.username != null && this.password != null ? response.success(`${this.username} is currently logged in`) : 
@@ -54,12 +70,40 @@ export class persona {
     }
 
     /**
+     * Return the currently loaded username
+     */
+    public getUsername() {
+        return this.username != null ? response.success(`${this.username} was found.`, this.username) : 
+        this.previous !== null ? response.failed(`${this.previous.username} is not currently logged in.`) : response.failed(`No user is currently logged in.`);
+    }
+
+    /**
+     * Get the current Persona's profile details
+     * @returns 
+     */
+    public getProfile(){
+        return this.profile === null ? response.failed(`No current profile exists.`) : response.success(`${this.username}'s profile has been loaded successfully.`, this.profile);
+    }
+
+    /**
+     * Save Persona's profile details
+     * @returns 
+     */
+    public saveProfile(newProfile: profile){
+        if(this.username === null || this.password === null) return response.failed(`No current profile exists.`) 
+        this.profile = newProfile;
+        this.current.profile = cypher.encrypt(JSON.stringify(newProfile), this.password+this.username);
+        this.save();
+        return response.success(`${this.username}'s profile was saved successfully.`);
+    }
+
+    /**
      * Switches to a new profile
      * @param username 
      * @param password 
      */
-    public switch( username : string, password:string ){
-        this.unload();
+    public async switch( username : string, password:string ){
+        await this.unload();
         this.username = username;
         this.username = password;
         return this.load();
@@ -74,16 +118,56 @@ export class persona {
     }
 
     /**
+     * Add a new entry to the recently loaded list.
+     * @param recentlyLoadedPersona 
+     */
+    private async addRecentListItem( recentlyLoadedPersona : personaSeed ){
+        if(!this.recentList.includes(recentlyLoadedPersona)){
+            this.recentList.push(recentlyLoadedPersona);
+            await this.systemSave();
+        }
+    }
+    
+
+
+    /**
+     * Load temporal persona system data that can be used to house common data outside of the persona's
+     */
+    public systemLoad(){
+        let filename = `${this.path}\\${this.system}${this.ext}`;
+        if(fs.existsSync(filename)){
+            let systemData = fs.readFileSync(filename);
+            return response.success(`System data was loaded successfully.`, JSON.parse(systemData));
+        } else {
+            return response.failed(`Failed to load System data.`);
+        }
+    }
+
+    /**
+     * Save temporal persona system data that can be used to house common data outside of the persona's
+     */
+    public async systemSave(){
+        let systemData : systemData = {
+            previous : this.previous,
+            recentList : this.recentList
+        };
+        let wasSaved = await this.updateFile(this.path, `${this.system}${this.ext}`, JSON.stringify(systemData));
+        return wasSaved ? response.success(`System data was saved successfully.`) : response.failed(`Failed to save system data.`);
+    }
+
+
+    /**
      * Unloads all currently loaded data. Essentially the same as logging out.
      * @returns 
      */
-    public unload(){
+    public async unload(){
         if(this.current === null) return response.failed(`Persona cannot be unloaded because no Persona loaded.`);
         this.previous = { 
             id: this.current.id, 
             username: this.username, 
             avatar: this.profile?.avatar != null ? this.profile.avatar : null 
-        }; // TODO save previous somewhere for future reference
+        };
+        await this.systemSave();
         this.current = null;
         this.username = null;
         this.password = null;
@@ -98,12 +182,12 @@ export class persona {
      * @param dataMap - Only pull back the sorage blocks you need to get started.
      */
     public async load(username: string = null, password:string = null, dataMap: Array<string> = null){
-        if(this.username !== username && this.password !== password) this.unload();
+        if(this.username !== username && this.password !== password) await this.unload();
         username = username === null ? this.username : username;
         password = password === null ? this.password : password;
         let id = await this.find(username, password);
         if(id !== null){
-            return await this.loadFile(this.path+"\\"+id+"\\"+this.root).then( async (content) => {
+            return await this.loadFile(`${this.path}\\${id}\\${this.root}${this.ext}`).then( async (content) => {
                 let persona : personaRoot = JSON.parse(content);
                     if(await cypher.verify(password+username, persona.password)){
                         this.password = password;
@@ -132,7 +216,7 @@ export class persona {
         if(id !== null){
             try{
                 await fs.rmdirSync(this.path+"\\"+id, { recursive: true });
-                this.unload();
+                await this.unload();
                 return response.success(`${username}'s Persona has been deleted.`);
             } catch {
                 return response.failed("Something failed when deleting this Persona.");
@@ -150,14 +234,9 @@ export class persona {
      * @returns Response object contains a one-time recovery code as the data property
      */
     public async create (username: string, password: string, strength:hashStrength = hashStrength.medium) : Promise<any> {
-        this.unload();
-        let files : Array<string> = await fs.promises.readdir(this.path);
-        let checkIfPersonaExists = await this.asyncSome(files, async (personaId:string) => {
-            let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
-            return username === cypher.decrypt(rootFile.username, password+username);
-        });
-
-        if(checkIfPersonaExists) return response.failed(`Persona ${username} already exists, please select a different username.`);
+        await this.unload();
+        let checkIfPersonaExists = await this.find(username, password);
+        if(checkIfPersonaExists !== null) return response.failed(`Persona ${username} already exists, please select a different username.`);
         let newID = await this.generatePersonaId().then((id:string) => { return id; });
         let recoveryId = cypher.generateRecoveryCode();
         let location = `${this.path}\\${newID}`;
@@ -176,8 +255,8 @@ export class persona {
             this.username = username;
             this.password = password;
             this.current = newProfile;
-            this.addRecentListItem({ id: newID, username : username, avatar: null, location: location });
-            let newRes = await this.updateFile(location, this.root, JSON.stringify(newProfile));
+            await this.addRecentListItem({ id: newID, username : username, avatar: null, location: location });
+            let newRes = await this.updateFile(location, `${this.root}${this.ext}`, JSON.stringify(newProfile));
             return newRes ? response.success(`Persona ${this.username} successfully created.`, recoveryId) : response.failed(`Persona ${this.username} failed to be created. Please check folder permissions.`) ;
         });
     }
@@ -189,30 +268,11 @@ export class persona {
      */
     public async save(){
         if( this.current !== null && this.username !== null && this.password !== null){
-            let newRes = await this.updateFile(`${this.path}\\${this.current.id}`, this.root, JSON.stringify(this.current));
+            let newRes = await this.updateFile(`${this.path}\\${this.current.id}`, `${this.root}${this.ext}`, JSON.stringify(this.current));
             return newRes ? response.success(`Persona ${this.username} successfully created.`) : response.failed(`Persona ${this.username} failed to be created. Please check folder permissions.`) ;
         } else {
             return response.failed('Persona failed to be saved. No Persona is active.');
         }
-    }
-
-    /**
-     * Get the current Persona's profile details
-     * @returns 
-     */
-    public getProfile(){
-        return this.profile === null ? response.failed(`No current profile exists.`) : response.success(`${this.username}'s profile has been loaded successfully.`, this.profile);
-    }
-
-    /**
-     * Save Persona's profile details
-     * @returns 
-     */
-    public saveProfile(newProfile: profile){
-        if(this.username === null || this.password === null) return response.failed(`No current profile exists.`) 
-        this.profile = newProfile;
-        this.current.profile = cypher.encrypt(JSON.stringify(newProfile), this.password+this.username);
-        return response.success(`${this.username}'s profile was saved successfully.`);
     }
     
     /**
@@ -237,7 +297,7 @@ export class persona {
     public async loadStorageBlock(dataId : string){
         let id = await this.setDataBlockID(dataId, true);
         let getProperId = (await this.setDataBlockID(dataId, false)).split("|");
-        return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.ext}`).then( async (content) => {
+        return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`).then( async (content) => {
             return response.success(`Data storage block was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
         });
     }
@@ -276,7 +336,7 @@ export class persona {
                 let files : Array<string> = await fs.promises.readdir(this.path+"\\"+personaId);
                 try{
                     files.forEach( file => {
-                        if(file !== this.root){
+                        if(file !== `${this.root}${this.ext}`){
                             fs.unlinkSync(this.path+"\\"+personaId+"\\"+file);
                         }
                     });
@@ -286,7 +346,7 @@ export class persona {
                 }
             } else {
                 try {
-                    fs.unlinkSync(this.path+"\\"+personaId+"\\"+(dataId.split('|')[0])+this.ext);
+                    fs.unlinkSync(this.path+"\\"+personaId+"\\"+(dataId.split('|')[0])+this.blockExt);
                     return response.success(`Successfully deleted data storage block.[${dataId}]`);
             } catch (err) {
                     return response.failed(`Failed to find the data storage block.[${dataId}]`);
@@ -302,16 +362,6 @@ export class persona {
     /// Private functions used for internal modifications only
 
     /**
-     * Add a new entry to the recently loaded list.
-     * @param recentlyLoadedPersona 
-     */
-    private addRecentListItem( recentlyLoadedPersona : personaSeed ){
-        if(!this.recentList.includes(recentlyLoadedPersona)){
-            this.recentList.push(recentlyLoadedPersona);
-        }
-    }
-
-    /**
      * Find a Persona with username and password
      * @param username 
      * @param password 
@@ -321,9 +371,13 @@ export class persona {
         if(this.current !== null && password === this.password && username === this.username) return this.current.id
         let files : Array<string> = await fs.promises.readdir(this.path);
         let id = null;
+       
         id = await this.asyncFind(files, async (personaId:string) => {
-            let rootFile = JSON.parse(await this.loadFile(`${this.path}\\${personaId}\\${this.root}`));
-            return username === cypher.decrypt(rootFile.username, password+username);
+            let personaFolder = `${this.path}\\${personaId}`;
+            if(fs.lstatSync(personaFolder).isDirectory()){
+                let rootFile = JSON.parse(await this.loadFile(`${personaFolder}\\${this.root}${this.ext}`));
+                return username === cypher.decrypt(rootFile.username, password+username);
+            }
         });
         return id === null || id === undefined || typeof id  !== 'string' ? null : id;
     }
@@ -344,7 +398,7 @@ export class persona {
                     if(err){ reject(errorMsg); }
                     fs.writeFile(`${path}\\${filename}`, data, (err:Error) => { 
                         if(err){ reject(errorMsg); }
-                        resolve(true);  
+                        resolve(true);
                     });
                 });
             } else {   
@@ -396,7 +450,7 @@ export class persona {
                     resolve(file);
                 });     
             } else {
-                reject(new Error( "Can not find the file you specified." ));
+                reject(new Error( "Cannot find the file you specified." ));
             }
         });
     }
@@ -460,8 +514,8 @@ export class persona {
         try {
             let personaLocation = `${this.path}\\${this.current.id}`;
             this.current.link.push( cypher.encrypt(id, this.password+this.username) );
-            await this.updateFile(personaLocation, `${id.split("|")[0]}${this.ext}`, cypher.encrypt(content, this.password+this.username));
-            await this.updateFile(personaLocation, this.root, JSON.stringify(this.current));
+            await this.updateFile(personaLocation, `${id.split("|")[0]}${this.blockExt}`, cypher.encrypt(content, this.password+this.username));
+            await this.updateFile(personaLocation, `${this.root}${this.ext}`, JSON.stringify(this.current));
             return response.success(`Data storage block successfully created.`);
         } catch (err) {
             return response.failed(`Data storage block ${id[2]} failed to create successfully.`);
@@ -475,7 +529,7 @@ export class persona {
      */
     private async updateStorageBlock(id: string, content:string){
         try {
-            await this.updateFile(`${this.path}\\${this.current.id}`, `${id.split("|")[0]}${this.ext}`, cypher.encrypt(content, this.password+this.username));
+            await this.updateFile(`${this.path}\\${this.current.id}`, `${id.split("|")[0]}${this.blockExt}`, cypher.encrypt(content, this.password+this.username));
             return response.success(`Data storage block ${id[2]} successfully updated.`);
         } catch (err) {
             return response.failed(`Data storage block ${id[2]} failed to update successfully.`);
