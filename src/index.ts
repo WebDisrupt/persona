@@ -62,15 +62,15 @@ export class persona {
     }
 
     /**
-     * Return a bool that represents if a new user is logged in.
+     * Return null if user was never loggedIn, returns previous if there was a previous persona user.
      */
     public isLoggedIn() {
         return this.username != null && this.password != null ? response.success(`${this.username} is currently logged in`) : 
-        this.previous !== null ? response.failed(`${this.previous.username} is not currently logged in.`) : response.failed(`No user is currently logged in.`);
+        this.previous !== null ? response.failed(`${this.previous.username} is not currently logged in.`, this.previous) : response.failed(`No user is currently logged in.`, null);
     }
 
     /**
-     * Return the currently loaded username
+     * Return the currently loaded username inside the standard response body
      */
     public getUsername() {
         return this.username != null ? response.success(`${this.username} was found.`, this.username) : 
@@ -128,7 +128,6 @@ export class persona {
         }
     }
     
-
 
     /**
      * Load temporal persona system data that can be used to house common data outside of the persona's

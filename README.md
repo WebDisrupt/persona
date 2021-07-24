@@ -33,14 +33,23 @@ let persona = new persona({
 Although none of these parameters are technically required, we do reccommend at a bare minimium using the **appName** to help scope your data.
 - **appName**: This should represent your application name and is used for scoping data. So you might want to make it a very long unique name.
 - **path**: The default path is "C:\\personas". You can change this, but know that it will not detect their previous profile information. So it is not recommended to change this yourself, but instead allow the end-user to change instead.
-- **RecentlyLoaded**: A minimal object referencing previously loaded profiles. There is no saving implemented for this yet, so you will have to save it yourself and pass it in on every new instance. Contains a list of { id: "string", username: "string", avatar: "Base64" }.
-- **pervious**: Last loaded persona for quick reference on subsequent ussage.
+- **RecentlyLoaded**: A minimal object referencing previously loaded profiles. There is no saving implemented for this yet, so you will have to save it yourself and pass it in on every new instance. If not provided it will load from the system.persona file.
+**Persona Seed Model**
+```javascript
+{ 
+    id: "string", 
+    username: "string", 
+    avatar: "Base64", 
+    location: "file location" 
+}
+```
+- **pervious**: Last loaded persona for quick reference on subsequent ussage. If not provided it will load from the system.persona file.
 
 ## API
 
 All API calls have a standardized response object. It contains a status which provides a bool on success or failure. The second property is a customer friendly message on what happened. The last is an optional data property that contians any data requested.
 
-Standard response object model
+**Standard response object model**
 ```javascript
 {status: boolean, message: string, data:any}
 ```
@@ -86,6 +95,34 @@ Get all recently loaded profiles.
 persona.getRecentList();
 ```
 
+### **Check if user is loggedIn**
+Check whether user is logged in. Additionally returns previously used simplified login data. See the **Persona Seed Model**.
+```javascript
+persona.isLoggedIn()
+```
+
+### **Get persona profile details.**
+ Returns the loggedIn user's profile details. Note these are optional. See the **Profile Model**.
+```javascript
+persona.getProfile()
+```
+**Profile Model**
+```javascript
+    avatar?: string,
+    firstName?: string,
+    lastName?: string,
+    phone?: string,
+    email?: string,
+    age?: Date,
+    gender?: string,
+    attributes?:Array<profileAttribute> // Profile Attribute is just a simple key value pair.
+```
+
+### **Save persona profile details.**
+ Saves the loggedIn user's profile details. See the **Profile Model**.
+```javascript
+persona.saveProfile()
+```
 
 ## Data Storage blocks
 
@@ -111,6 +148,6 @@ persona.deleteStorageBlock("unique-id-string");
 ```
 
 ## The Future
-I am looking to expand this library and create a way to sync data with cloud providers, peer to other devices, or self hosting. Thus creating a way to store your data as you would with a cloud provider but with them not being able, view, or tamper with your data.
+I am looking to expand this library and create a way to sync data with cloud providers, peer to other devices, or self hosting. Thus creating a way to store your data as you would with a cloud provider but with them not being able to view or tamper with your data.
 
 I would also like to increase redundancy, security, and add other cool features. If this sounds exciting and you would like to help then please don't hesitate to reach out to me. team@webdisrupt.com

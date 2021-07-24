@@ -130,7 +130,7 @@ var persona = (function () {
     }
     persona.prototype.isLoggedIn = function () {
         return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in") :
-            this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.") : response_1.response.failed("No user is currently logged in.");
+            this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.", this.previous) : response_1.response.failed("No user is currently logged in.", null);
     };
     persona.prototype.getUsername = function () {
         return this.username != null ? response_1.response.success(this.username + " was found.", this.username) :
