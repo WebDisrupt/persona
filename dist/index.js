@@ -140,12 +140,21 @@ var persona = (function () {
         return this.profile === null ? response_1.response.failed("No current profile exists.") : response_1.response.success(this.username + "'s profile has been loaded successfully.", this.profile);
     };
     persona.prototype.saveProfile = function (newProfile) {
-        if (this.username === null || this.password === null)
-            return response_1.response.failed("No current profile exists.");
-        this.profile = newProfile;
-        this.current.profile = cypher_1.cypher.encrypt(JSON.stringify(newProfile), this.password + this.username);
-        this.save();
-        return response_1.response.success(this.username + "'s profile was saved successfully.");
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.username === null || this.password === null)
+                            return [2, response_1.response.failed("No current profile exists.")];
+                        this.profile = newProfile;
+                        this.current.profile = cypher_1.cypher.encrypt(JSON.stringify(newProfile), this.password + this.username);
+                        return [4, this.save()];
+                    case 1:
+                        _a.sent();
+                        return [2, response_1.response.success(this.username + "'s profile was saved successfully.")];
+                }
+            });
+        });
     };
     persona.prototype["switch"] = function (username, password) {
         return __awaiter(this, void 0, void 0, function () {

@@ -89,11 +89,11 @@ export class persona {
      * Save Persona's profile details
      * @returns 
      */
-    public saveProfile(newProfile: profile){
+    public async saveProfile(newProfile: profile){
         if(this.username === null || this.password === null) return response.failed(`No current profile exists.`) 
         this.profile = newProfile;
         this.current.profile = cypher.encrypt(JSON.stringify(newProfile), this.password+this.username);
-        this.save();
+        await this.save();
         return response.success(`${this.username}'s profile was saved successfully.`);
     }
 

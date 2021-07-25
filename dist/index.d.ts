@@ -33,11 +33,11 @@ export declare class persona {
         message: string;
         data: any;
     };
-    saveProfile(newProfile: profile): {
+    saveProfile(newProfile: profile): Promise<{
         status: boolean;
         message: string;
         data: any;
-    };
+    }>;
     switch(username: string, password: string): Promise<{
         status: boolean;
         message: string;
