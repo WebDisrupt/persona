@@ -12,11 +12,12 @@ let personaInstance = new persona({ appName: "default-app", path: path});
 
 describe('No looping actions', () => {
 
-    test("Check if Persona is not logged in", async ()=>{
-        expect((await personaInstance.isLoggedIn()).status).toBe(false);
+    test("Check if Persona is not logged in", ()=>{
+        expect(personaInstance.isLoggedIn().status).toBe(false);
     });
 
 });
+
 
 describe('Persona Create and Delete Cycle.', () => {
 

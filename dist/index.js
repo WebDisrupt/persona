@@ -49,6 +49,7 @@ var persona = (function () {
     function persona(options) {
         var _this = this;
         if (options === void 0) { options = null; }
+        var _a;
         this.root = "root";
         this.ext = ".persona";
         this.blockExt = ".pstore";
@@ -121,7 +122,7 @@ var persona = (function () {
                 this.recentList = systemData.data.recentList;
             }
             if ((options === null || options === void 0 ? void 0 : options.previous) === undefined || (options === null || options === void 0 ? void 0 : options.previous) === null) {
-                this.username = systemData.data.previous.username;
+                this.username = ((_a = systemData.data.previous) === null || _a === void 0 ? void 0 : _a.username) || null;
                 this.previous = systemData.data.previous;
             }
         }

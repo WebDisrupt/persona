@@ -52,7 +52,7 @@ export class persona {
                 this.recentList = systemData.data.recentList;
             } 
             if(options?.previous === undefined || options?.previous === null){
-                this.username = systemData.data.previous.username;
+                this.username = systemData.data.previous?.username || null;
                 this.previous = systemData.data.previous;
             }
         }
