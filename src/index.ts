@@ -146,6 +146,13 @@ export class persona {
      * Save temporal persona system data that can be used to house common data outside of the persona's
      */
     public async systemSave(){
+        if(this.current !== null){
+            this.previous = { 
+                id: this.current.id, 
+                username: this.username, 
+                avatar: this.profile?.avatar != null ? this.profile.avatar : null 
+            };
+        } else {  this.previous = null;  }
         let systemData : systemData = {
             previous : this.previous,
             recentList : this.recentList
@@ -154,18 +161,12 @@ export class persona {
         return wasSaved ? response.success(`System data was saved successfully.`) : response.failed(`Failed to save system data.`);
     }
 
-
     /**
      * Unloads all currently loaded data. Essentially the same as logging out.
      * @returns 
      */
     public async unload(){
         if(this.current === null) return response.failed(`Persona cannot be unloaded because no Persona loaded.`);
-        this.previous = { 
-            id: this.current.id, 
-            username: this.username, 
-            avatar: this.profile?.avatar != null ? this.profile.avatar : null 
-        };
         await this.systemSave();
         this.current = null;
         this.username = null;

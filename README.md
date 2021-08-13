@@ -90,7 +90,7 @@ persona.unload();
 ```
 
 ### **Get Recently loaded Personas**
-Get all recently loaded profiles.
+Get all recently loaded profiles. This list is updated along with the previous user, on user login. (persona.load())
 ```javascript
 persona.getRecentList();
 ```

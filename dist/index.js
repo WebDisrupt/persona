@@ -201,39 +201,44 @@ var persona = (function () {
         }
     };
     persona.prototype.systemSave = function () {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
             var systemData, wasSaved;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
+                        if (this.current !== null) {
+                            this.previous = {
+                                id: this.current.id,
+                                username: this.username,
+                                avatar: ((_a = this.profile) === null || _a === void 0 ? void 0 : _a.avatar) != null ? this.profile.avatar : null
+                            };
+                        }
+                        else {
+                            this.previous = null;
+                        }
                         systemData = {
                             previous: this.previous,
                             recentList: this.recentList
                         };
                         return [4, this.updateFile(this.path, "" + this.system + this.ext, JSON.stringify(systemData))];
                     case 1:
-                        wasSaved = _a.sent();
+                        wasSaved = _b.sent();
                         return [2, wasSaved ? response_1.response.success("System data was saved successfully.") : response_1.response.failed("Failed to save system data.")];
                 }
             });
         });
     };
     persona.prototype.unload = function () {
-        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (this.current === null)
                             return [2, response_1.response.failed("Persona cannot be unloaded because no Persona loaded.")];
-                        this.previous = {
-                            id: this.current.id,
-                            username: this.username,
-                            avatar: ((_a = this.profile) === null || _a === void 0 ? void 0 : _a.avatar) != null ? this.profile.avatar : null
-                        };
                         return [4, this.systemSave()];
                     case 1:
-                        _b.sent();
+                        _a.sent();
                         this.current = null;
                         this.username = null;
                         this.password = null;
