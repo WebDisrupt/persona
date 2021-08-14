@@ -16,6 +16,18 @@ describe('No looping actions', () => {
         expect(personaInstance.isLoggedIn().status).toBe(false);
     });
 
+    test("Add to previous and check that it will load with system data.", async ()=>{
+
+
+        await personaInstance.create(username, password, 1);
+        personaInstance.unload();
+        await personaInstance.load(username, password);
+        personaInstance.unload();
+        let systemData = await personaInstance.systemLoad();
+        expect(systemData.data.previous.username).toBe(username);
+        await personaInstance.delete(username, password);
+    });
+
 });
 
 

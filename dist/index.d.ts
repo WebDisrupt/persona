@@ -49,11 +49,11 @@ export declare class persona {
         data: any;
     };
     private addRecentListItem;
-    systemLoad(): {
+    systemLoad(): Promise<{
         status: boolean;
         message: string;
         data: any;
-    };
+    }>;
     systemSave(): Promise<{
         status: boolean;
         message: string;

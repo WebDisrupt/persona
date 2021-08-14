@@ -15,6 +15,7 @@ export { profile, profileAttribute };
 
 let uuid = require('uuid-random');
 var fs = require("fs");
+import { readFile } from 'fs/promises';
 var path = require("path");
 
 export class persona {
@@ -46,7 +47,8 @@ export class persona {
         if(options?.appName !== undefined) this.appName = options.appName;
         
         // If nothing passed in by parameter then load and use system data
-        let systemData = this.systemLoad();
+        async ()=> {
+        let systemData = await this.systemLoad();
         if(systemData.status){
             if(options?.recentList === undefined || options?.recentList === null){
                 this.recentList = systemData.data.recentList;
@@ -55,6 +57,7 @@ export class persona {
                 this.username = systemData.data.previous?.username || null;
                 this.previous = systemData.data.previous;
             }
+        }
         }
 
         // Create directory
@@ -132,14 +135,20 @@ export class persona {
     /**
      * Load temporal persona system data that can be used to house common data outside of the persona's
      */
-    public systemLoad(){
+    public async systemLoad(){
         let filename = `${this.path}\\${this.system}${this.ext}`;
+        var message = null;
         if(fs.existsSync(filename)){
-            let systemData = fs.readFileSync(filename);
-            return response.success(`System data was loaded successfully.`, JSON.parse(systemData));
+            try{
+                message = response.success(`System data was loaded successfully.`, JSON.parse(await readFile(filename, {encoding:"utf8"})));
+            } 
+            catch {
+                message = response.failed(`Failed to load System data, file might be locked or is corrupted.`);
+            }
         } else {
-            return response.failed(`Failed to load System data.`);
+            message = response.failed(`Failed to find System data.`);
         }
+        return message;
     }
 
     /**
