@@ -179,13 +179,13 @@ var persona = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!!this.recentList.includes(recentlyLoadedPersona)) return [3, 2];
-                        this.recentList.push(recentlyLoadedPersona);
+                        if (!this.recentList.includes(recentlyLoadedPersona)) {
+                            this.recentList.push(recentlyLoadedPersona);
+                        }
                         return [4, this.systemSave()];
                     case 1:
                         _a.sent();
-                        _a.label = 2;
-                    case 2: return [2];
+                        return [2];
                 }
             });
         });
@@ -272,29 +272,33 @@ var persona = (function () {
                         if (!(id !== null)) return [3, 5];
                         return [4, this.loadFile(this.path + "\\" + id + "\\" + this.root + this.ext).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 var persona, _a, _b, _c, _d;
-                                return __generator(this, function (_e) {
-                                    switch (_e.label) {
+                                var _e;
+                                return __generator(this, function (_f) {
+                                    switch (_f.label) {
                                         case 0:
                                             persona = JSON.parse(content);
                                             return [4, cypher_1.cypher.verify(password + username, persona.password)];
                                         case 1:
-                                            if (!_e.sent()) return [3, 5];
+                                            if (!_f.sent()) return [3, 6];
                                             this.password = password;
                                             this.username = username;
                                             this.current = persona;
                                             this.profile = JSON.parse(cypher_1.cypher.decrypt(persona.profile, password + username));
+                                            return [4, this.addRecentListItem({ id: id, username: username, avatar: ((_e = this.profile) === null || _e === void 0 ? void 0 : _e.avatar) || null, location: this.path + "\\" + id })];
+                                        case 2:
+                                            _f.sent();
                                             _b = (_a = response_1.response).success;
                                             _c = [username + ", Welcome back."];
-                                            if (!(dataMap !== null)) return [3, 3];
+                                            if (!(dataMap !== null)) return [3, 4];
                                             return [4, this.loadStorageBlocks(dataMap)];
-                                        case 2:
-                                            _d = (_e.sent()).data;
-                                            return [3, 4];
                                         case 3:
+                                            _d = (_f.sent()).data;
+                                            return [3, 5];
+                                        case 4:
                                             _d = null;
-                                            _e.label = 4;
-                                        case 4: return [2, _b.apply(_a, _c.concat([_d]))];
-                                        case 5: return [2, response_1.response.failed("The username or password is incorrect.")];
+                                            _f.label = 5;
+                                        case 5: return [2, _b.apply(_a, _c.concat([_d]))];
+                                        case 6: return [2, response_1.response.failed("The username or password is incorrect.")];
                                     }
                                 });
                             }); })];

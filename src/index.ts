@@ -124,8 +124,8 @@ export class persona {
     private async addRecentListItem( recentlyLoadedPersona : personaSeed ){
         if(!this.recentList.includes(recentlyLoadedPersona)){
             this.recentList.push(recentlyLoadedPersona);
-            await this.systemSave();
         }
+        await this.systemSave();
     }
     
 
@@ -194,6 +194,7 @@ export class persona {
                         this.username = username;
                         this.current = persona;
                         this.profile = JSON.parse(cypher.decrypt(persona.profile, password+username));
+                        await this.addRecentListItem({ id: id, username : username, avatar: this.profile?.avatar || null, location: `${this.path}\\${id}` });
                         return response.success(`${username}, Welcome back.`, dataMap !== null ? (await this.loadStorageBlocks(dataMap)).data : null);
                     } else {
                         return response.failed("The username or password is incorrect.");
