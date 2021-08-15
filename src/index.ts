@@ -45,20 +45,6 @@ export class persona {
             this.previous = options.previous;
         }
         if(options?.appName !== undefined) this.appName = options.appName;
-        
-        // If nothing passed in by parameter then load and use system data
-        async ()=> {
-        let systemData = await this.systemLoad();
-        if(systemData.status){
-            if(options?.recentList === undefined || options?.recentList === null){
-                this.recentList = systemData.data.recentList;
-            } 
-            if(options?.previous === undefined || options?.previous === null){
-                this.username = systemData.data.previous?.username || null;
-                this.previous = systemData.data.previous;
-            }
-        }
-        }
 
         // Create directory
         if(!fs.existsSync(this.path)) fs.mkdirSync(this.path, { recursive: true });
@@ -148,6 +134,17 @@ export class persona {
         } else {
             message = response.failed(`Failed to find System data.`);
         }
+
+        if(message.status){
+            try{
+                this.recentList = message.data.recentList;
+                this.username = message.data.previous?.username || null;
+                this.previous = message.data.previous;
+            } catch {
+                message = response.failed(`Failed to setup System data.`);
+            }
+        }
+
         return message;
     }
 

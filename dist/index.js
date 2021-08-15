@@ -116,27 +116,6 @@ var persona = (function () {
         }
         if ((options === null || options === void 0 ? void 0 : options.appName) !== undefined)
             this.appName = options.appName;
-        (function () { return __awaiter(_this, void 0, void 0, function () {
-            var systemData;
-            var _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0: return [4, this.systemLoad()];
-                    case 1:
-                        systemData = _b.sent();
-                        if (systemData.status) {
-                            if ((options === null || options === void 0 ? void 0 : options.recentList) === undefined || (options === null || options === void 0 ? void 0 : options.recentList) === null) {
-                                this.recentList = systemData.data.recentList;
-                            }
-                            if ((options === null || options === void 0 ? void 0 : options.previous) === undefined || (options === null || options === void 0 ? void 0 : options.previous) === null) {
-                                this.username = ((_a = systemData.data.previous) === null || _a === void 0 ? void 0 : _a.username) || null;
-                                this.previous = systemData.data.previous;
-                            }
-                        }
-                        return [2];
-                }
-            });
-        }); });
         if (!fs.existsSync(this.path))
             fs.mkdirSync(this.path, { recursive: true });
     }
@@ -202,33 +181,45 @@ var persona = (function () {
         });
     };
     persona.prototype.systemLoad = function () {
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var filename, message, _a, _b, _c, _d, _e, _f;
-            return __generator(this, function (_g) {
-                switch (_g.label) {
+            var filename, message, _b, _c, _d, _e, _f, _g;
+            return __generator(this, function (_h) {
+                switch (_h.label) {
                     case 0:
                         filename = this.path + "\\" + this.system + this.ext;
                         message = null;
                         if (!fs.existsSync(filename)) return [3, 5];
-                        _g.label = 1;
+                        _h.label = 1;
                     case 1:
-                        _g.trys.push([1, 3, , 4]);
-                        _b = (_a = response_1.response).success;
-                        _c = ["System data was loaded successfully."];
-                        _e = (_d = JSON).parse;
+                        _h.trys.push([1, 3, , 4]);
+                        _c = (_b = response_1.response).success;
+                        _d = ["System data was loaded successfully."];
+                        _f = (_e = JSON).parse;
                         return [4, promises_1.readFile(filename, { encoding: "utf8" })];
                     case 2:
-                        message = _b.apply(_a, _c.concat([_e.apply(_d, [_g.sent()])]));
+                        message = _c.apply(_b, _d.concat([_f.apply(_e, [_h.sent()])]));
                         return [3, 4];
                     case 3:
-                        _f = _g.sent();
+                        _g = _h.sent();
                         message = response_1.response.failed("Failed to load System data, file might be locked or is corrupted.");
                         return [3, 4];
                     case 4: return [3, 6];
                     case 5:
                         message = response_1.response.failed("Failed to find System data.");
-                        _g.label = 6;
-                    case 6: return [2, message];
+                        _h.label = 6;
+                    case 6:
+                        if (message.status) {
+                            try {
+                                this.recentList = message.data.recentList;
+                                this.username = ((_a = message.data.previous) === null || _a === void 0 ? void 0 : _a.username) || null;
+                                this.previous = message.data.previous;
+                            }
+                            catch (_j) {
+                                message = response_1.response.failed("Failed to setup System data.");
+                            }
+                        }
+                        return [2, message];
                 }
             });
         });
