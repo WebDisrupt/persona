@@ -326,10 +326,11 @@ export class persona {
     /**
      * Saves a block of data to an existing block or creates a new block.
      * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
-     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
+     * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns 
      */
-    public async saveStorageBlock(dataId: string, content:string){
+    public async saveStorageBlock(dataId: string, content:any){
+        if(typeof content !== "string") content = JSON.stringify(content);
         dataId = await this.setDataBlockID(dataId);
         if(this.current === null) return response.failed("No profile loaded.");
         if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");

@@ -95,11 +95,16 @@ describe('Persona Create and Delete Cycle.', () => {
     });
 
     /// Persona Data Storage Actions
+    
     test("Save and load a single data storage block.", async ()=>{
         let thisId = "example-data-block";
-        let thisContent = JSON.stringify({ "data" : "The text you want to save" });
-        await personaInstance.saveStorageBlock(thisId, thisContent);
-        expect((await personaInstance.loadStorageBlock(thisId)).data).toBe(thisContent);
+        let thisContent = { "data" : "The text you want to save" };
+        // as string
+        await personaInstance.saveStorageBlock(thisId, JSON.stringify(thisContent));
+        expect((await personaInstance.loadStorageBlock(thisId)).data).toBe(JSON.stringify(thisContent));
+        // as object
+        await personaInstance.saveStorageBlock(thisId+"2", thisContent);
+        expect((await personaInstance.loadStorageBlock(thisId)).data).toBe(JSON.stringify(thisContent));
     });
 
     test("Update a single data storage block.", async ()=>{

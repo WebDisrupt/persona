@@ -599,7 +599,7 @@ var persona = /** @class */ (function () {
     /**
      * Saves a block of data to an existing block or creates a new block.
      * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
-     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
+     * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns
      */
     persona.prototype.saveStorageBlock = function (dataId, content) {
@@ -608,7 +608,10 @@ var persona = /** @class */ (function () {
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId)];
+                    case 0:
+                        if (typeof content !== "string")
+                            content = JSON.stringify(content);
+                        return [4 /*yield*/, this.setDataBlockID(dataId)];
                     case 1:
                         dataId = _b.sent();
                         if (this.current === null)

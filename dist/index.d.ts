@@ -170,10 +170,10 @@ export declare class persona {
     /**
      * Saves a block of data to an existing block or creates a new block.
      * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
-     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
+     * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns
      */
-    saveStorageBlock(dataId: string, content: string): Promise<{
+    saveStorageBlock(dataId: string, content: any): Promise<{
         status: boolean;
         message: string;
         data: any;
