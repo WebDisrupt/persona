@@ -1,6 +1,6 @@
 
 
-# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-84.85%25-green)
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-89.06%25-green)
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -136,13 +136,24 @@ persona.saveStorageBlock("unique-id-string", "Whatever format or data you want t
 ```
 
 ### **Load Data Storage Block**
-Loads a block of data form an existing block. Note: The unique id can caontain any character except **"|"** character. 
+Loads a block of data form an existing block. Note: The unique id can contain any character except **"|"** character. 
 ```javascript
 persona.loadStorageBlock("unique-id-string");
 ```
 
+### **Load Data Storage Blocks**
+Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding object property. If the property is not found, then it assigns the previous data. Note: The unique id can contain any character except **"|"** character. 
+```javascript
+let dataObject = { 
+    block1: { prop1: "...", prop2: "..." },
+    block2: { prop1: "...", prop2: "..." },
+    block3: ["", "", ""]
+}
+persona.loadStorageBlocks(dataObject);
+```
+
 ### **Delete Data Storage Block**
-Deletes a storage block. Note: The unique id can caontain any character except **"|"** character.
+Deletes a storage block. Note: The unique id can contain any character except **"|"** character.
 ```javascript
 persona.deleteStorageBlock("unique-id-string");
 ```

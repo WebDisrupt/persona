@@ -65,6 +65,7 @@ describe('Persona Create and Delete Cycle.', () => {
 
     test("unload persona", async ()=>{
         expect((await personaInstance.unload()).status).toBe(true);
+        expect((await personaInstance.systemLoad()).data.previous.username).toBe(username);
     });
 
     test("Delete a persona that dsoes exist", async ()=>{
@@ -118,6 +119,26 @@ describe('Persona Create and Delete Cycle.', () => {
         expect((await personaInstance.deleteStorageBlock(thisId)).status).toBe(true);
         await personaInstance.saveStorageBlock(thisId, thisContent);
         await personaInstance.saveStorageBlock(thisId2, thisContent);
+        expect((await personaInstance.deleteStorageBlock()).status).toBe(true);
+    });
+
+    test("Load multiple data storage blocks mapped while perserving the previous data", async ()=>{
+        let defaultObject = {
+            exampleDataBlock : { "data" : "nothing loaded" },
+            exampleDataBlock2 : { "data" : "nothing loaded" },
+            exampleDataBlock3 : { "data" : "Wasn't JSON loaded" },
+            exampleDataBlock4 : { "data" : "defaulted" }
+        }
+        let defaultObjectKeys = Object.keys(defaultObject);
+        let thisContent = JSON.stringify({ "data" : "The text you want to save" });
+        await personaInstance.saveStorageBlock(defaultObjectKeys[0], thisContent);
+        await personaInstance.saveStorageBlock(defaultObjectKeys[1], thisContent);
+        await personaInstance.saveStorageBlock(defaultObjectKeys[2], "Sorry but this wasn't json, so load it as a string");
+        let defaultObjectmocked : any = defaultObject;
+        defaultObjectmocked[defaultObjectKeys[0]] = JSON.parse(thisContent);
+        defaultObjectmocked[defaultObjectKeys[1]] = JSON.parse(thisContent);
+        defaultObjectmocked[defaultObjectKeys[2]] = "Sorry but this wasn't json, so load it as a string";
+        expect((await personaInstance.loadStorageBlocks(defaultObject)).data).toStrictEqual(defaultObjectmocked);
         expect((await personaInstance.deleteStorageBlock()).status).toBe(true);
     });
 

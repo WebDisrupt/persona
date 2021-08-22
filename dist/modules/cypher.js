@@ -56,15 +56,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.cypher = void 0;
+// The hashing and Encryption used to secure persona details
 var CryptoJS = require("crypto-js");
 var argon2 = __importStar(require("argon2"));
 var password = require('secure-random-password');
-var cypher = (function () {
+var cypher = /** @class */ (function () {
     function cypher() {
     }
+    /**
+     * Perpares key for use
+     * @param key
+     * @returns 32 character key with most important factors taking precident
+     */
     cypher.getKey = function (key) {
         return key.length <= 32 ? key + this.ENCRYPTION_KEY.slice(key.length) : key.slice(0, 32);
     };
+    /**
+     * Encrypt using secure encryption process
+     * @param text - String to encrypt
+     * @param key - Key used to dynamically strengthen encryption
+     * @returns
+     */
     cypher.encrypt = function (text, key) {
         if (key === void 0) { key = ""; }
         key = this.getKey(key);
@@ -77,6 +89,12 @@ var cypher = (function () {
             return text;
         return encrypted;
     };
+    /**
+     * Decrypt using secure encryption process. If it fails then return an empty string.
+     * @param text - String to decrypt
+     * @param key - Key used to dynamically strengthen encryption
+     * @returns
+     */
     cypher.decrypt = function (text, key) {
         if (key === void 0) { key = ""; }
         var decrypted;
@@ -104,13 +122,21 @@ var cypher = (function () {
             return "";
         }
     };
+    /**
+    * Uses Bcrypt to create a secure irreversible hash
+    * @param password - User supplied password
+    * @param saltRounds Optional - defines the complexity
+    * @returns
+    */
     cypher.hash = function (password, strength) {
         if (strength === void 0) { strength = 3; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, argon2.hash(password, this.getStrength(strength))];
-                    case 1: return [2, (_a.sent()).toString()];
+                    case 0: return [4 /*yield*/, argon2.hash(password, this.getStrength(strength))];
+                    case 1: 
+                    //return await bcrypt.hash(password, saltRounds);
+                    return [2 /*return*/, (_a.sent()).toString()];
                 }
             });
         });
@@ -137,16 +163,27 @@ var cypher = (function () {
                 break;
         }
     };
+    /**
+     * Verify with Bcrypt to check if it is correct
+     * @param password - User supplied password
+     * @param hash - Hash to compare against
+     * @returns
+     */
     cypher.verify = function (password, hash) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, argon2.verify(hash, password)];
-                    case 1: return [2, _a.sent()];
+                    case 0: return [4 /*yield*/, argon2.verify(hash, password)];
+                    case 1: 
+                    //return bcrypt.compare(password, hash);
+                    return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
+    /**
+     * Generate random recovery code which will allow the user to unlock his acees to persona
+     */
     cypher.generateRecoveryCode = function () {
         return password.randomPassword({ length: 32 });
     };

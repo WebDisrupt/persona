@@ -37,6 +37,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.persona = exports.hashStrengthDetails = exports.hashStrength = void 0;
+/**
+ * Persona - Personal information storage, privacy, and security
+ */
 var hash_strength_1 = require("./models/hash-strength");
 exports.hashStrength = hash_strength_1.hashStrength;
 exports.hashStrengthDetails = hash_strength_1.hashStrengthDetails;
@@ -46,22 +49,32 @@ var uuid = require('uuid-random');
 var fs = require("fs");
 var promises_1 = require("fs/promises");
 var path = require("path");
-var persona = (function () {
+var persona = /** @class */ (function () {
+    /**
+     * Constructor - Used to assign personaOptions.
+     * @param options
+     */
     function persona(options) {
         var _this = this;
         if (options === void 0) { options = null; }
-        this.root = "root";
-        this.ext = ".persona";
-        this.blockExt = ".pstore";
-        this.system = "system";
-        this.appName = "default";
-        this.path = "C:\\personas";
-        this.current = null;
-        this.recentList = [];
-        this.previous = null;
-        this.profile = null;
-        this.username = null;
-        this.password = null;
+        this.root = "root"; // The root file naming convention
+        this.ext = ".persona"; // The extention for personas data storage
+        this.blockExt = ".pstore"; // The extention for personas data storage
+        this.system = "system"; // The system file naming convention
+        this.appName = "default"; // Your application name
+        this.path = "C:\\personas"; // Current Personas folder location
+        this.current = null; // The currently loaded Persona (Decrypted/unusable)
+        this.recentList = []; // A list of all recently loaded personas
+        this.previous = null; // Last opened Persona (usable)
+        this.profile = null; // Stores version of profile data (usable)
+        this.username = null; // The current temp username (usable)
+        this.password = null; // The current temp password (usable)
+        /**
+         * Performs an async version of array.some passing in an array and the function
+         * @param arr - Array to be iterated on
+         * @param predicate - Function
+         * @returns
+         */
         this.asyncSome = function (arr, predicate) { return __awaiter(_this, void 0, void 0, function () {
             var _i, arr_1, e;
             return __generator(this, function (_a) {
@@ -70,20 +83,26 @@ var persona = (function () {
                         _i = 0, arr_1 = arr;
                         _a.label = 1;
                     case 1:
-                        if (!(_i < arr_1.length)) return [3, 4];
+                        if (!(_i < arr_1.length)) return [3 /*break*/, 4];
                         e = arr_1[_i];
-                        return [4, predicate(e)];
+                        return [4 /*yield*/, predicate(e)];
                     case 2:
                         if (_a.sent())
-                            return [2, true];
+                            return [2 /*return*/, true];
                         _a.label = 3;
                     case 3:
                         _i++;
-                        return [3, 1];
-                    case 4: return [2, false];
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/, false];
                 }
             });
         }); };
+        /**
+         * Performs an async version of array.some passing in an array and the function
+         * @param arr - Array to be iterated on
+         * @param predicate - Function
+         * @returns
+         */
         this.asyncFind = function (arr, predicate) { return __awaiter(_this, void 0, void 0, function () {
             var _i, arr_2, e;
             return __generator(this, function (_a) {
@@ -92,17 +111,17 @@ var persona = (function () {
                         _i = 0, arr_2 = arr;
                         _a.label = 1;
                     case 1:
-                        if (!(_i < arr_2.length)) return [3, 4];
+                        if (!(_i < arr_2.length)) return [3 /*break*/, 4];
                         e = arr_2[_i];
-                        return [4, predicate(e)];
+                        return [4 /*yield*/, predicate(e)];
                     case 2:
                         if (_a.sent())
-                            return [2, e];
+                            return [2 /*return*/, e];
                         _a.label = 3;
                     case 3:
                         _i++;
-                        return [3, 1];
-                    case 4: return [2, null];
+                        return [3 /*break*/, 1];
+                    case 4: return [2 /*return*/, null];
                 }
             });
         }); };
@@ -116,54 +135,82 @@ var persona = (function () {
         }
         if ((options === null || options === void 0 ? void 0 : options.appName) !== undefined)
             this.appName = options.appName;
+        // Create directory
         if (!fs.existsSync(this.path))
             fs.mkdirSync(this.path, { recursive: true });
     }
+    /**
+     * Return null if user was never loggedIn, returns previous if there was a previous persona user.
+     */
     persona.prototype.isLoggedIn = function () {
         return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in") :
             this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.", this.previous) : response_1.response.failed("No user is currently logged in.", null);
     };
+    /**
+     * Return the currently loaded username inside the standard response body
+     */
     persona.prototype.getUsername = function () {
         return this.username != null ? response_1.response.success(this.username + " was found.", this.username) :
             this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.") : response_1.response.failed("No user is currently logged in.");
     };
+    /**
+     * Get the current Persona's profile details
+     * @returns
+     */
     persona.prototype.getProfile = function () {
         return this.profile === null ? response_1.response.failed("No current profile exists.") : response_1.response.success(this.username + "'s profile has been loaded successfully.", this.profile);
     };
+    /**
+     * Save Persona's profile details
+     * @returns
+     */
     persona.prototype.saveProfile = function (newProfile) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (this.username === null || this.password === null)
-                            return [2, response_1.response.failed("No current profile exists.")];
+                            return [2 /*return*/, response_1.response.failed("No current profile exists.")];
                         this.profile = newProfile;
                         this.current.profile = cypher_1.cypher.encrypt(JSON.stringify(newProfile), this.password + this.username);
-                        return [4, this.save()];
+                        return [4 /*yield*/, this.save()];
                     case 1:
                         _a.sent();
-                        return [2, response_1.response.success(this.username + "'s profile was saved successfully.")];
+                        return [2 /*return*/, response_1.response.success(this.username + "'s profile was saved successfully.")];
                 }
             });
         });
     };
+    /**
+     * Switches to a new profile
+     * @param username
+     * @param password
+     */
     persona.prototype["switch"] = function (username, password) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.unload()];
+                    case 0: return [4 /*yield*/, this.unload()];
                     case 1:
                         _a.sent();
                         this.username = username;
                         this.username = password;
-                        return [2, this.load()];
+                        return [2 /*return*/, this.load()];
                 }
             });
         });
     };
+    /**
+     * Get all recently loaded profiles
+     * @returns
+     */
     persona.prototype.getRecentList = function () {
         return this.recentList !== null ? response_1.response.success("Success, " + this.recentList.length + " Prsonas found.", this.recentList) : response_1.response.failed("Could not find any recently loaded Prsonas.");
     };
+    /**
+     * Add a new entry to the recently loaded list.
+     * @param recentlyLoadedPersona
+     */
     persona.prototype.addRecentListItem = function (recentlyLoadedPersona) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -172,14 +219,17 @@ var persona = (function () {
                         if (!this.recentList.includes(recentlyLoadedPersona)) {
                             this.recentList.push(recentlyLoadedPersona);
                         }
-                        return [4, this.systemSave()];
+                        return [4 /*yield*/, this.systemSave()];
                     case 1:
                         _a.sent();
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
     };
+    /**
+     * Load temporal persona system data that can be used to house common data outside of the persona's
+     */
     persona.prototype.systemLoad = function () {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
@@ -189,22 +239,22 @@ var persona = (function () {
                     case 0:
                         filename = this.path + "\\" + this.system + this.ext;
                         message = null;
-                        if (!fs.existsSync(filename)) return [3, 5];
+                        if (!fs.existsSync(filename)) return [3 /*break*/, 5];
                         _h.label = 1;
                     case 1:
                         _h.trys.push([1, 3, , 4]);
                         _c = (_b = response_1.response).success;
                         _d = ["System data was loaded successfully."];
                         _f = (_e = JSON).parse;
-                        return [4, promises_1.readFile(filename, { encoding: "utf8" })];
+                        return [4 /*yield*/, promises_1.readFile(filename, { encoding: "utf8" })];
                     case 2:
                         message = _c.apply(_b, _d.concat([_f.apply(_e, [_h.sent()])]));
-                        return [3, 4];
+                        return [3 /*break*/, 4];
                     case 3:
                         _g = _h.sent();
                         message = response_1.response.failed("Failed to load System data, file might be locked or is corrupted.");
-                        return [3, 4];
-                    case 4: return [3, 6];
+                        return [3 /*break*/, 4];
+                    case 4: return [3 /*break*/, 6];
                     case 5:
                         message = response_1.response.failed("Failed to find System data.");
                         _h.label = 6;
@@ -219,11 +269,14 @@ var persona = (function () {
                                 message = response_1.response.failed("Failed to setup System data.");
                             }
                         }
-                        return [2, message];
+                        return [2 /*return*/, message];
                 }
             });
         });
     };
+    /**
+     * Save temporal persona system data that can be used to house common data outside of the persona's
+     */
     persona.prototype.systemSave = function () {
         var _a;
         return __awaiter(this, void 0, void 0, function () {
@@ -245,33 +298,43 @@ var persona = (function () {
                             previous: this.previous,
                             recentList: this.recentList
                         };
-                        return [4, this.updateFile(this.path, "" + this.system + this.ext, JSON.stringify(systemData))];
+                        return [4 /*yield*/, this.updateFile(this.path, "" + this.system + this.ext, JSON.stringify(systemData))];
                     case 1:
                         wasSaved = _b.sent();
-                        return [2, wasSaved ? response_1.response.success("System data was saved successfully.") : response_1.response.failed("Failed to save system data.")];
+                        return [2 /*return*/, wasSaved ? response_1.response.success("System data was saved successfully.") : response_1.response.failed("Failed to save system data.")];
                 }
             });
         });
     };
+    /**
+     * Unloads all currently loaded data. Essentially the same as logging out.
+     * @returns
+     */
     persona.prototype.unload = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (this.current === null)
-                            return [2, response_1.response.failed("Persona cannot be unloaded because no Persona loaded.")];
-                        return [4, this.systemSave()];
+                            return [2 /*return*/, response_1.response.failed("Persona cannot be unloaded because no Persona loaded.")];
+                        return [4 /*yield*/, this.systemSave()];
                     case 1:
                         _a.sent();
                         this.current = null;
                         this.username = null;
                         this.password = null;
                         this.profile = null;
-                        return [2, response_1.response.success("Successfully logged out of the Persona " + this.previous.username + ".")];
+                        return [2 /*return*/, response_1.response.success("Successfully logged out of the Persona " + this.previous.username + ".")];
                 }
             });
         });
     };
+    /**
+     * Find Persona based on username. Use password to decrypt. Load additional storage blocks based on datamap parameter.
+     * @param username - Unique username associated with the Persona.
+     * @param password - Master password associated with the Persona.
+     * @param dataMap - Only pull back the sorage blocks you need to get started.
+     */
     persona.prototype.load = function (username, password, dataMap) {
         if (username === void 0) { username = null; }
         if (password === void 0) { password = null; }
@@ -282,56 +345,61 @@ var persona = (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(this.username !== username && this.password !== password)) return [3, 2];
-                        return [4, this.unload()];
+                        if (!(this.username !== username && this.password !== password)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.unload()];
                     case 1:
                         _a.sent();
                         _a.label = 2;
                     case 2:
                         username = username === null ? this.username : username;
                         password = password === null ? this.password : password;
-                        return [4, this.find(username, password)];
+                        return [4 /*yield*/, this.find(username, password)];
                     case 3:
                         id = _a.sent();
-                        if (!(id !== null)) return [3, 5];
-                        return [4, this.loadFile(this.path + "\\" + id + "\\" + this.root + this.ext).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                        if (!(id !== null)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.loadFile(this.path + "\\" + id + "\\" + this.root + this.ext).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 var persona, _a, _b, _c, _d;
                                 var _e;
                                 return __generator(this, function (_f) {
                                     switch (_f.label) {
                                         case 0:
                                             persona = JSON.parse(content);
-                                            return [4, cypher_1.cypher.verify(password + username, persona.password)];
+                                            return [4 /*yield*/, cypher_1.cypher.verify(password + username, persona.password)];
                                         case 1:
-                                            if (!_f.sent()) return [3, 6];
+                                            if (!_f.sent()) return [3 /*break*/, 6];
                                             this.password = password;
                                             this.username = username;
                                             this.current = persona;
                                             this.profile = JSON.parse(cypher_1.cypher.decrypt(persona.profile, password + username));
-                                            return [4, this.addRecentListItem({ id: id, username: username, avatar: ((_e = this.profile) === null || _e === void 0 ? void 0 : _e.avatar) || null, location: this.path + "\\" + id })];
+                                            return [4 /*yield*/, this.addRecentListItem({ id: id, username: username, avatar: ((_e = this.profile) === null || _e === void 0 ? void 0 : _e.avatar) || null, location: this.path + "\\" + id })];
                                         case 2:
                                             _f.sent();
                                             _b = (_a = response_1.response).success;
                                             _c = [username + ", Welcome back."];
-                                            if (!(dataMap !== null)) return [3, 4];
-                                            return [4, this.loadStorageBlocks(dataMap)];
+                                            if (!(dataMap !== null)) return [3 /*break*/, 4];
+                                            return [4 /*yield*/, this.loadStorageBlocks(dataMap)];
                                         case 3:
                                             _d = (_f.sent()).data;
-                                            return [3, 5];
+                                            return [3 /*break*/, 5];
                                         case 4:
                                             _d = null;
                                             _f.label = 5;
-                                        case 5: return [2, _b.apply(_a, _c.concat([_d]))];
-                                        case 6: return [2, response_1.response.failed("The username or password is incorrect.")];
+                                        case 5: return [2 /*return*/, _b.apply(_a, _c.concat([_d]))];
+                                        case 6: return [2 /*return*/, response_1.response.failed("The username or password is incorrect.")];
                                     }
                                 });
                             }); })];
-                    case 4: return [2, _a.sent()];
-                    case 5: return [2, response_1.response.failed("The username or password is incorrect.")];
+                    case 4: return [2 /*return*/, _a.sent()];
+                    case 5: return [2 /*return*/, response_1.response.failed("The username or password is incorrect.")];
                 }
             });
         });
     };
+    /**
+     * Delete a Persona and all data storage.
+     * @param username (optional) - Needed for creating a new Persona, before saving.
+     * @param password (optional) - Needed for creating a new Persona, before saving.
+     */
     persona.prototype["delete"] = function (username, password) {
         if (username === void 0) { username = null; }
         if (password === void 0) { password = null; }
@@ -342,30 +410,37 @@ var persona = (function () {
                     case 0:
                         username = username === null ? this.username : username;
                         password = password === null ? this.password : password;
-                        return [4, this.find(username, password)];
+                        return [4 /*yield*/, this.find(username, password)];
                     case 1:
                         id = _b.sent();
-                        if (!(id !== null)) return [3, 7];
+                        if (!(id !== null)) return [3 /*break*/, 7];
                         _b.label = 2;
                     case 2:
                         _b.trys.push([2, 5, , 6]);
-                        return [4, fs.rmdirSync(this.path + "\\" + id, { recursive: true })];
+                        return [4 /*yield*/, fs.rmdirSync(this.path + "\\" + id, { recursive: true })];
                     case 3:
                         _b.sent();
-                        return [4, this.unload()];
+                        return [4 /*yield*/, this.unload()];
                     case 4:
                         _b.sent();
-                        return [2, response_1.response.success(username + "'s Persona has been deleted.")];
+                        return [2 /*return*/, response_1.response.success(username + "'s Persona has been deleted.")];
                     case 5:
                         _a = _b.sent();
-                        return [2, response_1.response.failed("Something failed when deleting this Persona.")];
-                    case 6: return [3, 8];
-                    case 7: return [2, response_1.response.failed("Could not find a valid Persona or it has already been deleted.")];
-                    case 8: return [2];
+                        return [2 /*return*/, response_1.response.failed("Something failed when deleting this Persona.")];
+                    case 6: return [3 /*break*/, 8];
+                    case 7: return [2 /*return*/, response_1.response.failed("Could not find a valid Persona or it has already been deleted.")];
+                    case 8: return [2 /*return*/];
                 }
             });
         });
     };
+    /**
+     * Allows users to create a new Persona.
+     * @param username - useranme required to create new Persona.
+     * @param password - password required to secure new Persona.
+     * @param strength - (optional) Passsword Hashing Strength.
+     * @returns Response object contains a one-time recovery code as the data property
+     */
     persona.prototype.create = function (username, password, strength) {
         if (strength === void 0) { strength = hash_strength_1.hashStrength.medium; }
         return __awaiter(this, void 0, void 0, function () {
@@ -373,21 +448,21 @@ var persona = (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.unload()];
+                    case 0: return [4 /*yield*/, this.unload()];
                     case 1:
                         _a.sent();
-                        return [4, this.find(username, password)];
+                        return [4 /*yield*/, this.find(username, password)];
                     case 2:
                         checkIfPersonaExists = _a.sent();
                         if (checkIfPersonaExists !== null)
-                            return [2, response_1.response.failed("Persona " + username + " already exists, please select a different username.")];
-                        return [4, this.generatePersonaId().then(function (id) { return id; })];
+                            return [2 /*return*/, response_1.response.failed("Persona " + username + " already exists, please select a different username.")];
+                        return [4 /*yield*/, this.generatePersonaId().then(function (id) { return id; })];
                     case 3:
                         newID = _a.sent();
                         recoveryId = cypher_1.cypher.generateRecoveryCode();
                         location = this.path + "\\" + newID;
                         key = password + username;
-                        return [4, cypher_1.cypher.hash(key, Number(strength.toString())).then(function (hash) { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, cypher_1.cypher.hash(key, Number(strength.toString())).then(function (hash) { return __awaiter(_this, void 0, void 0, function () {
                                 var newProfile, newRes;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
@@ -405,127 +480,167 @@ var persona = (function () {
                                             this.username = username;
                                             this.password = password;
                                             this.current = newProfile;
-                                            return [4, this.addRecentListItem({ id: newID, username: username, avatar: null, location: location })];
+                                            return [4 /*yield*/, this.addRecentListItem({ id: newID, username: username, avatar: null, location: location })];
                                         case 1:
                                             _a.sent();
-                                            return [4, this.updateFile(location, "" + this.root + this.ext, JSON.stringify(newProfile))];
+                                            return [4 /*yield*/, this.updateFile(location, "" + this.root + this.ext, JSON.stringify(newProfile))];
                                         case 2:
                                             newRes = _a.sent();
-                                            return [2, newRes ? response_1.response.success("Persona " + this.username + " successfully created.", recoveryId) : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
+                                            return [2 /*return*/, newRes ? response_1.response.success("Persona " + this.username + " successfully created.", recoveryId) : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
                                     }
                                 });
                             }); })];
-                    case 4: return [2, _a.sent()];
+                    case 4: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
+    /**
+     * Save the currently loaded Persona.
+     * @param username (optional) - Needed for creating a new Persona, before saving.
+     * @param password (optional) - Needed for creating a new Persona, before saving.
+     */
     persona.prototype.save = function () {
         return __awaiter(this, void 0, void 0, function () {
             var newRes;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(this.current !== null && this.username !== null && this.password !== null)) return [3, 2];
-                        return [4, this.updateFile(this.path + "\\" + this.current.id, "" + this.root + this.ext, JSON.stringify(this.current))];
+                        if (!(this.current !== null && this.username !== null && this.password !== null)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.updateFile(this.path + "\\" + this.current.id, "" + this.root + this.ext, JSON.stringify(this.current))];
                     case 1:
                         newRes = _a.sent();
-                        return [2, newRes ? response_1.response.success("Persona " + this.username + " successfully created.") : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
-                    case 2: return [2, response_1.response.failed('Persona failed to be saved. No Persona is active.')];
+                        return [2 /*return*/, newRes ? response_1.response.success("Persona " + this.username + " successfully created.") : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
+                    case 2: return [2 /*return*/, response_1.response.failed('Persona failed to be saved. No Persona is active.')];
                 }
             });
         });
     };
-    persona.prototype.loadStorageBlocks = function (dataIdMap) {
+    /**
+     * Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding objectMap property.
+     * @param objectMap An object, it will always try to load storage block for every property. If it fails then it will perserve the currently assigned data.
+     * @returns passes back a new object that mimics the previous
+     */
+    persona.prototype.loadStorageBlocks = function (objectMap) {
+        if (objectMap === void 0) { objectMap = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var collection, _a, _b, _i, dataId, item;
+            var newObjectMap, dataIdMap, _a, _b, _i, index, item, err_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
+                        newObjectMap = {};
+                        dataIdMap = Object.keys(objectMap);
                         _a = [];
                         for (_b in dataIdMap)
                             _a.push(_b);
                         _i = 0;
                         _c.label = 1;
                     case 1:
-                        if (!(_i < _a.length)) return [3, 4];
-                        dataId = _a[_i];
-                        return [4, this.loadStorageBlock(dataId)];
+                        if (!(_i < _a.length)) return [3 /*break*/, 6];
+                        index = _a[_i];
+                        _c.label = 2;
                     case 2:
-                        item = _c.sent();
-                        collection.push(item.status === true ? item.data : null);
-                        _c.label = 3;
+                        _c.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.loadStorageBlock(dataIdMap[index])];
                     case 3:
-                        _i++;
-                        return [3, 1];
+                        item = _c.sent();
+                        try {
+                            newObjectMap[dataIdMap[index]] = item.status === true ? JSON.parse(item.data) : null;
+                        }
+                        catch (err) {
+                            newObjectMap[dataIdMap[index]] = item.status === true ? item.data : null;
+                        }
+                        return [3 /*break*/, 5];
                     case 4:
+                        err_1 = _c.sent();
+                        newObjectMap[dataIdMap[index]] = objectMap[dataIdMap[index]];
+                        return [3 /*break*/, 5];
+                    case 5:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 6:
                         ;
-                        return [2, response_1.response.success("Data storage blocks loaded successfully.", collection)];
+                        return [2 /*return*/, response_1.response.success("Data storage blocks loaded successfully.", newObjectMap)];
                 }
             });
         });
     };
+    /**
+     * Loads a block of data form an existing block.
+     * @param dataId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
+     * @returns
+     */
     persona.prototype.loadStorageBlock = function (dataId) {
         return __awaiter(this, void 0, void 0, function () {
             var id, getProperId;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.setDataBlockID(dataId, true)];
+                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId, true)];
                     case 1:
                         id = _a.sent();
-                        return [4, this.setDataBlockID(dataId, false)];
+                        return [4 /*yield*/, this.setDataBlockID(dataId, false)];
                     case 2:
                         getProperId = (_a.sent()).split("|");
-                        return [4, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 return __generator(this, function (_a) {
-                                    return [2, response_1.response.success("Data storage block was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
+                                    return [2 /*return*/, response_1.response.success("Data storage block was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
                                 });
                             }); })];
-                    case 3: return [2, _a.sent()];
+                    case 3: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
+    /**
+     * Saves a block of data to an existing block or creates a new block.
+     * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
+     * @param content - A blanked string that can be formated how ever you would like to consume it with your application.
+     * @returns
+     */
     persona.prototype.saveStorageBlock = function (dataId, content) {
         return __awaiter(this, void 0, void 0, function () {
             var checkIfBlockExists, newRes, _a;
             var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4, this.setDataBlockID(dataId)];
+                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId)];
                     case 1:
                         dataId = _b.sent();
                         if (this.current === null)
-                            return [2, response_1.response.failed("No profile loaded.")];
+                            return [2 /*return*/, response_1.response.failed("No profile loaded.")];
                         if (dataId === undefined || dataId === null)
-                            return [2, response_1.response.failed("No storage id provided.")];
+                            return [2 /*return*/, response_1.response.failed("No storage id provided.")];
                         checkIfBlockExists = this.current.link.some(function (item) {
                             var block = cypher_1.cypher.decrypt(item, _this.password + _this.username).split("|");
                             return block[1] === _this.appName && block[2] === dataId;
                         });
-                        if (!checkIfBlockExists) return [3, 3];
-                        return [4, this.updateStorageBlock(dataId, content)];
+                        if (!checkIfBlockExists) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.updateStorageBlock(dataId, content)];
                     case 2:
                         _a = _b.sent();
-                        return [3, 5];
-                    case 3: return [4, this.createStorageBlock(dataId, content)];
+                        return [3 /*break*/, 5];
+                    case 3: return [4 /*yield*/, this.createStorageBlock(dataId, content)];
                     case 4:
                         _a = _b.sent();
                         _b.label = 5;
                     case 5:
                         newRes = _a;
                         if (newRes.status === true) {
-                            return [2, response_1.response.success("Data storage block " + dataId[2] + " was saved successfully.")];
+                            return [2 /*return*/, response_1.response.success("Data storage block " + dataId[2] + " was saved successfully.")];
                         }
                         else {
-                            return [2, newRes];
+                            return [2 /*return*/, newRes];
                         }
-                        return [2];
+                        return [2 /*return*/];
                 }
             });
         });
     };
+    /**
+     * Delete a storage block
+     * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
+     */
     persona.prototype.deleteStorageBlock = function (dataId) {
         if (dataId === void 0) { dataId = null; }
         return __awaiter(this, void 0, void 0, function () {
@@ -533,15 +648,15 @@ var persona = (function () {
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, this.find(this.username, this.password)];
+                    case 0: return [4 /*yield*/, this.find(this.username, this.password)];
                     case 1:
                         personaId = _a.sent();
-                        return [4, this.setDataBlockID(dataId)];
+                        return [4 /*yield*/, this.setDataBlockID(dataId)];
                     case 2:
                         dataId = _a.sent();
-                        if (!(personaId !== null)) return [3, 6];
-                        if (!(dataId === null)) return [3, 4];
-                        return [4, fs.promises.readdir(this.path + "\\" + personaId)];
+                        if (!(personaId !== null)) return [3 /*break*/, 6];
+                        if (!(dataId === null)) return [3 /*break*/, 4];
+                        return [4 /*yield*/, fs.promises.readdir(this.path + "\\" + personaId)];
                     case 3:
                         files = _a.sent();
                         try {
@@ -550,28 +665,35 @@ var persona = (function () {
                                     fs.unlinkSync(_this.path + "\\" + personaId + "\\" + file);
                                 }
                             });
-                            return [2, response_1.response.success("Successfully deleted all storage blocks.")];
+                            return [2 /*return*/, response_1.response.success("Successfully deleted all storage blocks.")];
                         }
                         catch (_b) {
-                            return [2, response_1.response.failed("Could not find any storage blocks to delete.")];
+                            return [2 /*return*/, response_1.response.failed("Could not find any storage blocks to delete.")];
                         }
-                        return [3, 5];
+                        return [3 /*break*/, 5];
                     case 4:
                         try {
                             fs.unlinkSync(this.path + "\\" + personaId + "\\" + (dataId.split('|')[0]) + this.blockExt);
-                            return [2, response_1.response.success("Successfully deleted data storage block.[" + dataId + "]")];
+                            return [2 /*return*/, response_1.response.success("Successfully deleted data storage block.[" + dataId + "]")];
                         }
                         catch (err) {
-                            return [2, response_1.response.failed("Failed to find the data storage block.[" + dataId + "]")];
+                            return [2 /*return*/, response_1.response.failed("Failed to find the data storage block.[" + dataId + "]")];
                         }
                         _a.label = 5;
-                    case 5: return [3, 7];
-                    case 6: return [2, response_1.response.failed("Failed to delete data storage block(s) because no Persona was found.")];
-                    case 7: return [2];
+                    case 5: return [3 /*break*/, 7];
+                    case 6: return [2 /*return*/, response_1.response.failed("Failed to delete data storage block(s) because no Persona was found.")];
+                    case 7: return [2 /*return*/];
                 }
             });
         });
     };
+    /// Private functions used for internal modifications only
+    /**
+     * Find a Persona with username and password
+     * @param username
+     * @param password
+     * @returns
+     */
     persona.prototype.find = function (username, password) {
         if (username === void 0) { username = null; }
         if (password === void 0) { password = null; }
@@ -582,34 +704,41 @@ var persona = (function () {
                 switch (_a.label) {
                     case 0:
                         if (this.current !== null && password === this.password && username === this.username)
-                            return [2, this.current.id];
-                        return [4, fs.promises.readdir(this.path)];
+                            return [2 /*return*/, this.current.id];
+                        return [4 /*yield*/, fs.promises.readdir(this.path)];
                     case 1:
                         files = _a.sent();
                         id = null;
-                        return [4, this.asyncFind(files, function (personaId) { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, this.asyncFind(files, function (personaId) { return __awaiter(_this, void 0, void 0, function () {
                                 var personaFolder, rootFile, _a, _b;
                                 return __generator(this, function (_c) {
                                     switch (_c.label) {
                                         case 0:
                                             personaFolder = this.path + "\\" + personaId;
-                                            if (!fs.lstatSync(personaFolder).isDirectory()) return [3, 2];
+                                            if (!fs.lstatSync(personaFolder).isDirectory()) return [3 /*break*/, 2];
                                             _b = (_a = JSON).parse;
-                                            return [4, this.loadFile(personaFolder + "\\" + this.root + this.ext)];
+                                            return [4 /*yield*/, this.loadFile(personaFolder + "\\" + this.root + this.ext)];
                                         case 1:
                                             rootFile = _b.apply(_a, [_c.sent()]);
-                                            return [2, username === cypher_1.cypher.decrypt(rootFile.username, password + username)];
-                                        case 2: return [2];
+                                            return [2 /*return*/, username === cypher_1.cypher.decrypt(rootFile.username, password + username)];
+                                        case 2: return [2 /*return*/];
                                     }
                                 });
                             }); })];
                     case 2:
                         id = _a.sent();
-                        return [2, id === null || id === undefined || typeof id !== 'string' ? null : id];
+                        return [2 /*return*/, id === null || id === undefined || typeof id !== 'string' ? null : id];
                 }
             });
         });
     };
+    /**
+     * Save updates to an existing file. If that files doesn't exsist then it creates the file and recursive folder structure.
+     * @param path - path to file
+     * @param filename - filename + extenton
+     * @param data - The data needing to be saved
+     * @returns true or error
+     */
     persona.prototype.updateFile = function (path, filename, data) {
         return __awaiter(this, void 0, void 0, function () {
             var errorMsg;
@@ -617,7 +746,7 @@ var persona = (function () {
                 switch (_a.label) {
                     case 0:
                         errorMsg = "Failed to save file, please make sure this Application has the correct permissions.";
-                        return [4, new Promise(function (resolve, reject) {
+                        return [4 /*yield*/, new Promise(function (resolve, reject) {
                                 var _this = this;
                                 if (!fs.existsSync(path)) {
                                     fs.mkdir(path, { recursive: true }, function (err) { return __awaiter(_this, void 0, void 0, function () {
@@ -631,7 +760,7 @@ var persona = (function () {
                                                 }
                                                 resolve(true);
                                             });
-                                            return [2];
+                                            return [2 /*return*/];
                                         });
                                     }); });
                                 }
@@ -644,16 +773,21 @@ var persona = (function () {
                                     });
                                 }
                             })];
-                    case 1: return [2, _a.sent()];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
+    /**
+     * Load updates from an existing file
+     * @param filename - path + filename + extenton
+     * @returns file contents or error
+     */
     persona.prototype.loadFile = function (filename) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4, new Promise(function (resolve, reject) {
+                    case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
                             if (fs.existsSync(filename)) {
                                 fs.readFile(filename, function (err, file) {
                                     if (err) {
@@ -666,11 +800,16 @@ var persona = (function () {
                                 reject(new Error("Cannot find the file you specified."));
                             }
                         })];
-                    case 1: return [2, _a.sent()];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
+    /**
+     * Checks if existing system IDs in path to check if ID is truly unique
+     * @param path - Location to check if unique ID is actually unique
+     * @returns
+     */
     persona.prototype.generatePersonaId = function () {
         return __awaiter(this, void 0, void 0, function () {
             var newId, files;
@@ -678,19 +817,24 @@ var persona = (function () {
                 switch (_a.label) {
                     case 0:
                         newId = uuid();
-                        if (!fs.existsSync(path)) return [3, 2];
-                        return [4, fs.promises.readdir(this.path)];
+                        if (!fs.existsSync(path)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, fs.promises.readdir(this.path)];
                     case 1:
                         files = _a.sent();
                         while (files.includes(newId)) {
                             newId = uuid();
                         }
                         _a.label = 2;
-                    case 2: return [2, newId];
+                    case 2: return [2 /*return*/, newId];
                 }
             });
         });
     };
+    /**
+     * Generates a new unique id within in the data list
+     * @param list
+     * @returns
+     */
     persona.prototype.generateStorageId = function () {
         return __awaiter(this, void 0, void 0, function () {
             var newId;
@@ -700,10 +844,16 @@ var persona = (function () {
                     while (this.current.link.some(function (item) { return item.includes(newId); })) {
                         newId = uuid();
                     }
-                return [2, newId];
+                return [2 /*return*/, newId];
             });
         });
     };
+    /**
+     * Returns a properly formated data block id. You can pass in an encrypted, or decrypted version, or just a data block name.
+     * @param unkown Takes an id in an unknown state
+     * @param encrypt returns it encrupted or dcrypted
+     * @returns
+     */
     persona.prototype.setDataBlockID = function (unknown, encrypt) {
         if (encrypt === void 0) { encrypt = false; }
         return __awaiter(this, void 0, void 0, function () {
@@ -713,73 +863,83 @@ var persona = (function () {
                 switch (_a.label) {
                     case 0:
                         if (unknown === null)
-                            return [2, null];
+                            return [2 /*return*/, null];
                         colonCheck = unknown.includes("|") ? unknown.split("|").length : 0;
-                        if (!(colonCheck === 0)) return [3, 2];
-                        return [4, this.generateStorageId().then(function (result) { return result; })];
+                        if (!(colonCheck === 0)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.generateStorageId().then(function (result) { return result; })];
                     case 1:
                         newId = _a.sent();
                         decrypted = cypher_1.cypher.decrypt(unknown, this.password + this.username);
                         if (typeof decrypted === "string" && decrypted.split("|").length === 3) {
-                            return [2, encrypt ? unknown : decrypted];
+                            return [2 /*return*/, encrypt ? unknown : decrypted];
                         }
                         else {
                             exists = this.current.link.find(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes("|" + _this.appName + "|" + unknown); });
-                            return [2, exists !== undefined ? cypher_1.cypher.decrypt(exists, this.password + this.username) : newId + "|" + this.appName + "|" + unknown];
+                            return [2 /*return*/, exists !== undefined ? cypher_1.cypher.decrypt(exists, this.password + this.username) : newId + "|" + this.appName + "|" + unknown];
                         }
-                        return [3, 3];
+                        return [3 /*break*/, 3];
                     case 2:
                         if (colonCheck === 3) {
-                            return [2, encrypt ? cypher_1.cypher.encrypt(unknown, this.password + this.username) : unknown];
+                            return [2 /*return*/, encrypt ? cypher_1.cypher.encrypt(unknown, this.password + this.username) : unknown];
                         }
                         else {
-                            return [2, null];
+                            return [2 /*return*/, null];
                         }
                         _a.label = 3;
-                    case 3: return [2];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
+    /**
+     * Creates a new storage block, can't be called directly.
+     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
+     * @param content - contains a string of important data that is saved
+     */
     persona.prototype.createStorageBlock = function (id, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var personaLocation, err_1;
+            var personaLocation, err_2;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
                         personaLocation = this.path + "\\" + this.current.id;
                         this.current.link.push(cypher_1.cypher.encrypt(id, this.password + this.username));
-                        return [4, this.updateFile(personaLocation, "" + id.split("|")[0] + this.blockExt, cypher_1.cypher.encrypt(content, this.password + this.username))];
+                        return [4 /*yield*/, this.updateFile(personaLocation, "" + id.split("|")[0] + this.blockExt, cypher_1.cypher.encrypt(content, this.password + this.username))];
                     case 1:
                         _a.sent();
-                        return [4, this.updateFile(personaLocation, "" + this.root + this.ext, JSON.stringify(this.current))];
+                        return [4 /*yield*/, this.updateFile(personaLocation, "" + this.root + this.ext, JSON.stringify(this.current))];
                     case 2:
                         _a.sent();
-                        return [2, response_1.response.success("Data storage block successfully created.")];
+                        return [2 /*return*/, response_1.response.success("Data storage block successfully created.")];
                     case 3:
-                        err_1 = _a.sent();
-                        return [2, response_1.response.failed("Data storage block " + id[2] + " failed to create successfully.")];
-                    case 4: return [2];
+                        err_2 = _a.sent();
+                        return [2 /*return*/, response_1.response.failed("Data storage block " + id[2] + " failed to create successfully.")];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
+    /**
+     * Updates an existing Storage block, can't be called directly.
+     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
+     * @param content - contains a string of important data that is saved
+     */
     persona.prototype.updateStorageBlock = function (id, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var err_2;
+            var err_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4, this.updateFile(this.path + "\\" + this.current.id, "" + id.split("|")[0] + this.blockExt, cypher_1.cypher.encrypt(content, this.password + this.username))];
+                        return [4 /*yield*/, this.updateFile(this.path + "\\" + this.current.id, "" + id.split("|")[0] + this.blockExt, cypher_1.cypher.encrypt(content, this.password + this.username))];
                     case 1:
                         _a.sent();
-                        return [2, response_1.response.success("Data storage block " + id[2] + " successfully updated.")];
+                        return [2 /*return*/, response_1.response.success("Data storage block " + id[2] + " successfully updated.")];
                     case 2:
-                        err_2 = _a.sent();
-                        return [2, response_1.response.failed("Data storage block " + id[2] + " failed to update successfully.")];
-                    case 3: return [2];
+                        err_3 = _a.sent();
+                        return [2 /*return*/, response_1.response.failed("Data storage block " + id[2] + " failed to update successfully.")];
+                    case 3: return [2 /*return*/];
                 }
             });
         });

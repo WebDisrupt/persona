@@ -6,7 +6,7 @@
       "noImplicitAny": true,
       "esModuleInterop" : true,
       "sourceMap": true,
-      "removeComments": true,
+      "removeComments": false,
       "outDir": "dist",
       "rootDir": "src",
       "baseUrl": "."

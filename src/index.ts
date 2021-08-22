@@ -283,17 +283,26 @@ export class persona {
     }
     
     /**
-     * Loads multiple storage blocks based on a data map.
-     * @param dataIdMap A collection of ids that will load a collection of data.
-     * @returns 
+     * Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding objectMap property.
+     * @param objectMap An object, it will always try to load storage block for every property. If it fails then it will perserve the currently assigned data.
+     * @returns passes back a new object that mimics the previous
      */
-    public async loadStorageBlocks(dataIdMap : Array<string>){
-        let collection : Array<any>;
-        for(let dataId in dataIdMap){
-            let item = await this.loadStorageBlock(dataId);
-            collection.push(item.status === true ? item.data : null);
+    public async loadStorageBlocks(objectMap : any = null){
+        let newObjectMap : any = {};
+        let dataIdMap : Array<string> = Object.keys(objectMap);
+        for(let index in dataIdMap){
+            try{
+                let item = await this.loadStorageBlock(dataIdMap[index]);
+                try{
+                    newObjectMap[dataIdMap[index]] = item.status === true ? JSON.parse(item.data) : null;
+                } catch(err){
+                    newObjectMap[dataIdMap[index]] = item.status === true ? item.data : null;
+                }
+            } catch(err){
+                newObjectMap[dataIdMap[index]] = objectMap[dataIdMap[index]];
+            }
         };
-        return response.success(`Data storage blocks loaded successfully.`, collection);
+        return response.success(`Data storage blocks loaded successfully.`, newObjectMap);
     }
 
     /**
