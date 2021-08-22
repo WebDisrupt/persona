@@ -524,7 +524,7 @@ var persona = /** @class */ (function () {
     persona.prototype.loadStorageBlocks = function (objectMap) {
         if (objectMap === void 0) { objectMap = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var newObjectMap, dataIdMap, _a, _b, _i, index, item, err_1;
+            var newObjectMap, dataIdMap, _a, _b, _i, index, property, item, err_1;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -538,29 +538,33 @@ var persona = /** @class */ (function () {
                     case 1:
                         if (!(_i < _a.length)) return [3 /*break*/, 6];
                         index = _a[_i];
+                        property = dataIdMap[index];
                         _c.label = 2;
                     case 2:
                         _c.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, this.loadStorageBlock(dataIdMap[index])];
+                        return [4 /*yield*/, this.loadStorageBlock(property)];
                     case 3:
                         item = _c.sent();
-                        try {
-                            newObjectMap[dataIdMap[index]] = item.status === true ? JSON.parse(item.data) : null;
+                        if ((item === null || item === void 0 ? void 0 : item.status) === true) {
+                            try {
+                                newObjectMap[property] = JSON.parse(item.data);
+                            }
+                            catch (err) {
+                                newObjectMap[property] = item.data;
+                            }
                         }
-                        catch (err) {
-                            newObjectMap[dataIdMap[index]] = item.status === true ? item.data : null;
+                        else {
+                            newObjectMap[property] = objectMap[property];
                         }
                         return [3 /*break*/, 5];
                     case 4:
                         err_1 = _c.sent();
-                        newObjectMap[dataIdMap[index]] = objectMap[dataIdMap[index]];
+                        newObjectMap[property] = objectMap[property];
                         return [3 /*break*/, 5];
                     case 5:
                         _i++;
                         return [3 /*break*/, 1];
-                    case 6:
-                        ;
-                        return [2 /*return*/, response_1.response.success("Data storage blocks loaded successfully.", newObjectMap)];
+                    case 6: return [2 /*return*/, response_1.response.success("Data storage blocks loaded successfully.", newObjectMap)];
                 }
             });
         });

@@ -291,17 +291,22 @@ export class persona {
         let newObjectMap : any = {};
         let dataIdMap : Array<string> = Object.keys(objectMap);
         for(let index in dataIdMap){
+            let property : string = dataIdMap[index];
             try{
-                let item = await this.loadStorageBlock(dataIdMap[index]);
-                try{
-                    newObjectMap[dataIdMap[index]] = item.status === true ? JSON.parse(item.data) : null;
-                } catch(err){
-                    newObjectMap[dataIdMap[index]] = item.status === true ? item.data : null;
+                let item = await this.loadStorageBlock(property);
+                if(item?.status === true){
+                    try{
+                        newObjectMap[property] = JSON.parse(item.data);
+                    } catch(err){
+                        newObjectMap[property] = item.data;
+                    }
+                } else {
+                    newObjectMap[property] = objectMap[property];
                 }
             } catch(err){
-                newObjectMap[dataIdMap[index]] = objectMap[dataIdMap[index]];
+                newObjectMap[property] = objectMap[property];
             }
-        };
+        }
         return response.success(`Data storage blocks loaded successfully.`, newObjectMap);
     }
 

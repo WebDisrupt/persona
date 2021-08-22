@@ -1,6 +1,6 @@
 {
   "name": "@webdisrupt/persona",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "author": "Web Disrupt",
   "description": "Store local data in a secure data vault.",
   "main": "dist/index.js",
