@@ -517,7 +517,7 @@ export class persona {
             if(typeof decrypted === "string" && decrypted.split("|").length === 3){
                 return encrypt ? unknown : decrypted;
             } else {
-                let exists = this.current.link.find( item => { return cypher.decrypt(item, this.password+this.username).includes(`|${this.appName}|${unknown}`) });
+                let exists =  this.current === null ? undefined : this.current.link.find( item => { return cypher.decrypt(item, this.password+this.username).includes(`|${this.appName}|${unknown}`) });
                 return exists !== undefined ? cypher.decrypt(exists, this.password+this.username) : `${newId}|${this.appName}|${unknown}`;
             }
         } else if(colonCheck === 3){

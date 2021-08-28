@@ -881,7 +881,7 @@ var persona = /** @class */ (function () {
                             return [2 /*return*/, encrypt ? unknown : decrypted];
                         }
                         else {
-                            exists = this.current.link.find(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes("|" + _this.appName + "|" + unknown); });
+                            exists = this.current === null ? undefined : this.current.link.find(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes("|" + _this.appName + "|" + unknown); });
                             return [2 /*return*/, exists !== undefined ? cypher_1.cypher.decrypt(exists, this.password + this.username) : newId + "|" + this.appName + "|" + unknown];
                         }
                         return [3 /*break*/, 3];
