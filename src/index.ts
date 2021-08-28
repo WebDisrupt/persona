@@ -498,7 +498,7 @@ export class persona {
      */
     private async generateStorageId() : Promise<string> {
         let newId : string = uuid();
-        if(this.current.link != null) while (this.current.link.some( item => {  return item.includes(newId) } )) { newId = uuid(); }
+        if(this.current != null && this.current.link != null) while (this.current.link.some( item => {  return item.includes(newId) } )) { newId = uuid(); }
         return newId;
     }
 

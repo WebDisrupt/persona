@@ -847,7 +847,7 @@ var persona = /** @class */ (function () {
             var newId;
             return __generator(this, function (_a) {
                 newId = uuid();
-                if (this.current.link != null)
+                if (this.current != null && this.current.link != null)
                     while (this.current.link.some(function (item) { return item.includes(newId); })) {
                         newId = uuid();
                     }
