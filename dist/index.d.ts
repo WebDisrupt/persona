@@ -229,6 +229,12 @@ export declare class persona {
      */
     private generatePersonaId;
     /**
+     * Chekcs whether the storage block id exists.
+     * @param id - pass in the storage block id
+     * @returns
+     */
+    private doesStorageBlockIdExist;
+    /**
      * Generates a new unique id within in the data list
      * @param list
      * @returns
@@ -241,6 +247,15 @@ export declare class persona {
      * @returns
      */
     private setDataBlockID;
+    /**
+     * Gets all the storage block that are defined inside the current Persona.
+     * @returns
+     */
+    getStorageBlockList(): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
     /**
      * Creates a new storage block, can't be called directly.
      * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id

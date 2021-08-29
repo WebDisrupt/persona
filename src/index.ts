@@ -334,11 +334,7 @@ export class persona {
         dataId = await this.setDataBlockID(dataId);
         if(this.current === null) return response.failed("No profile loaded.");
         if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");
-        let checkIfBlockExists = this.current.link.some( item => {
-            let block = cypher.decrypt(item, this.password+this.username).split("|");
-            return block[1] === this.appName && block[2] === dataId;
-        });
-        let newRes = checkIfBlockExists ? await this.updateStorageBlock(dataId, content) : await this.createStorageBlock(dataId, content);
+        let newRes = this.doesStorageBlockIdExist(dataId) ? await this.updateStorageBlock(dataId, content) : await this.createStorageBlock(dataId, content);
         if(newRes.status === true){
             return response.success(`Data storage block ${dataId[2]} was saved successfully.`);
         } else {
@@ -492,13 +488,22 @@ export class persona {
     }
 
     /**
+     * Chekcs whether the storage block id exists.
+     * @param id - pass in the storage block id
+     * @returns 
+     */
+    private doesStorageBlockIdExist(id:string) {
+       return this.current != null && this.current.link != null && this.current.link.length > 0 ? this.current.link.some( item => {  return cypher.decrypt(item, this.password+this.username).includes(id) }) : false
+    }
+
+    /**
      * Generates a new unique id within in the data list
      * @param list 
      * @returns 
      */
     private async generateStorageId() : Promise<string> {
         let newId : string = uuid();
-        if(this.current != null && this.current.link != null && this.current.link.length > 0) while (this.current.link.some( item => {  return cypher.decrypt(item, this.password+this.username).includes(newId) } )) { newId = uuid(); }
+        while (this.doesStorageBlockIdExist(newId)) { newId = uuid(); }
         return newId;
     }
 
@@ -527,6 +532,20 @@ export class persona {
         }
     }
 
+   /**
+    * Gets all the storage block that are defined inside the current Persona.
+    * @returns 
+    */
+    public getStorageBlockList() {
+        let newLinkList : Array<string> = [];
+        if(this.current !== null){
+            this.current.link.forEach((item) => { newLinkList.push(cypher.decrypt(item, this.password+this.username)); });
+            return response.success(`All storage blocks listed.`, newLinkList);
+        } else {
+            return response.failed(`Can't list storage blocks, please login.`, []); 
+        }
+    }
+
     /**
      * Creates a new storage block, can't be called directly.
      * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
@@ -535,7 +554,7 @@ export class persona {
     private async createStorageBlock(id: string, content:string){ 
         try {
             let personaLocation = `${this.path}\\${this.current.id}`;
-            this.current.link.push( cypher.encrypt(id, this.password+this.username) );
+           /* if(this.doesStorageBlockIdExist(id))*/ this.current.link.push( cypher.encrypt(id, this.password+this.username) );
             await this.updateFile(personaLocation, `${id.split("|")[0]}${this.blockExt}`, cypher.encrypt(content, this.password+this.username));
             await this.updateFile(personaLocation, `${this.root}${this.ext}`, JSON.stringify(this.current));
             return response.success(`Data storage block successfully created.`);

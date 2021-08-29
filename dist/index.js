@@ -604,8 +604,7 @@ var persona = /** @class */ (function () {
      */
     persona.prototype.saveStorageBlock = function (dataId, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var checkIfBlockExists, newRes, _a;
-            var _this = this;
+            var newRes, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -618,11 +617,7 @@ var persona = /** @class */ (function () {
                             return [2 /*return*/, response_1.response.failed("No profile loaded.")];
                         if (dataId === undefined || dataId === null)
                             return [2 /*return*/, response_1.response.failed("No storage id provided.")];
-                        checkIfBlockExists = this.current.link.some(function (item) {
-                            var block = cypher_1.cypher.decrypt(item, _this.password + _this.username).split("|");
-                            return block[1] === _this.appName && block[2] === dataId;
-                        });
-                        if (!checkIfBlockExists) return [3 /*break*/, 3];
+                        if (!this.doesStorageBlockIdExist(dataId)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.updateStorageBlock(dataId, content)];
                     case 2:
                         _a = _b.sent();
@@ -838,6 +833,15 @@ var persona = /** @class */ (function () {
         });
     };
     /**
+     * Chekcs whether the storage block id exists.
+     * @param id - pass in the storage block id
+     * @returns
+     */
+    persona.prototype.doesStorageBlockIdExist = function (id) {
+        var _this = this;
+        return this.current != null && this.current.link != null && this.current.link.length > 0 ? this.current.link.some(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes(id); }) : false;
+    };
+    /**
      * Generates a new unique id within in the data list
      * @param list
      * @returns
@@ -845,13 +849,11 @@ var persona = /** @class */ (function () {
     persona.prototype.generateStorageId = function () {
         return __awaiter(this, void 0, void 0, function () {
             var newId;
-            var _this = this;
             return __generator(this, function (_a) {
                 newId = uuid();
-                if (this.current != null && this.current.link != null && this.current.link.length > 0)
-                    while (this.current.link.some(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes(newId); })) {
-                        newId = uuid();
-                    }
+                while (this.doesStorageBlockIdExist(newId)) {
+                    newId = uuid();
+                }
                 return [2 /*return*/, newId];
             });
         });
@@ -900,6 +902,21 @@ var persona = /** @class */ (function () {
         });
     };
     /**
+     * Gets all the storage block that are defined inside the current Persona.
+     * @returns
+     */
+    persona.prototype.getStorageBlockList = function () {
+        var _this = this;
+        var newLinkList = [];
+        if (this.current !== null) {
+            this.current.link.forEach(function (item) { newLinkList.push(cypher_1.cypher.decrypt(item, _this.password + _this.username)); });
+            return response_1.response.success("All storage blocks listed.", newLinkList);
+        }
+        else {
+            return response_1.response.failed("Can't list storage blocks, please login.", []);
+        }
+    };
+    /**
      * Creates a new storage block, can't be called directly.
      * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
      * @param content - contains a string of important data that is saved
@@ -912,7 +929,7 @@ var persona = /** @class */ (function () {
                     case 0:
                         _a.trys.push([0, 3, , 4]);
                         personaLocation = this.path + "\\" + this.current.id;
-                        this.current.link.push(cypher_1.cypher.encrypt(id, this.password + this.username));
+                        /* if(this.doesStorageBlockIdExist(id))*/ this.current.link.push(cypher_1.cypher.encrypt(id, this.password + this.username));
                         return [4 /*yield*/, this.updateFile(personaLocation, "" + id.split("|")[0] + this.blockExt, cypher_1.cypher.encrypt(content, this.password + this.username))];
                     case 1:
                         _a.sent();

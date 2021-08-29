@@ -114,6 +114,7 @@ describe('Persona Create and Delete Cycle.', () => {
         await personaInstance.saveStorageBlock(thisId, thisContent);
         expect((await personaInstance.saveStorageBlock(thisId, thisContent2)).status).toBe(true);
         expect((await personaInstance.loadStorageBlock(thisId)).data).toBe(thisContent2);
+        expect(personaInstance.getStorageBlockList().data.length).toBe(1);
     });
 
     test("Delete a data storage block(s)", async ()=>{
