@@ -845,10 +845,11 @@ var persona = /** @class */ (function () {
     persona.prototype.generateStorageId = function () {
         return __awaiter(this, void 0, void 0, function () {
             var newId;
+            var _this = this;
             return __generator(this, function (_a) {
                 newId = uuid();
-                if (this.current != null && this.current.link != null)
-                    while (this.current.link.some(function (item) { return item.includes(newId); })) {
+                if (this.current != null && this.current.link != null && this.current.link.length > 0)
+                    while (this.current.link.some(function (item) { return cypher_1.cypher.decrypt(item, _this.password + _this.username).includes(newId); })) {
                         newId = uuid();
                     }
                 return [2 /*return*/, newId];
