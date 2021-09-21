@@ -15,6 +15,7 @@ export { profile, profileAttribute };
 
 let uuid = require('uuid-random');
 var fs = require("fs");
+var recursive = require("recursive-readdir");
 import { readFile } from 'fs/promises';
 var path = require("path");
 
@@ -26,7 +27,7 @@ export class persona {
     private readonly system : string = "system"; // The system file naming convention
     private appName : string = "default"; // Your application name
     private path : string = "C:\\personas"; // Current Personas folder location
-    private current: personaRoot = null; // The currently loaded Persona (Decrypted/unusable)
+    private current: personaRoot = null; // The currently loaded Persona (Encrypted/unusable)
     private recentList : Array<personaSeed> = []; // A list of all recently loaded personas
     private previous: personaSeed = null; // Last opened Persona (usable)
     private profile: profile = null; // Stores version of profile data (usable)
@@ -54,8 +55,16 @@ export class persona {
      * Return null if user was never loggedIn, returns previous if there was a previous persona user.
      */
     public isLoggedIn() {
-        return this.username != null && this.password != null ? response.success(`${this.username} is currently logged in`) : 
+        return this.username != null && this.password != null ? response.success(`${this.username} is currently logged in.`) : 
         this.previous !== null ? response.failed(`${this.previous.username} is not currently logged in.`, this.previous) : response.failed(`No user is currently logged in.`, null);
+    }
+
+    /**
+     *  Returns the current Persona's id or null if not loggedIn
+     */
+    public getId (){
+        return this.username != null && this.password != null ? response.success(`${this.username}'s id was found.`, this.current.id) : 
+        response.failed(`No user is currently logged in.`, null);
     }
 
     /**
@@ -316,10 +325,9 @@ export class persona {
      * @returns 
      */
     public async loadStorageBlock(dataId : string){
-        let id = await this.setDataBlockID(dataId, true);
         let getProperId = (await this.setDataBlockID(dataId, false)).split("|");
         return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`).then( async (content) => {
-            return response.success(`Data storage block was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
+            return response.success(`Data storage block ${dataId} was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
         });
     }
 
@@ -336,7 +344,7 @@ export class persona {
         if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");
         let newRes = this.doesStorageBlockIdExist(dataId) ? await this.updateStorageBlock(dataId, content) : await this.createStorageBlock(dataId, content);
         if(newRes.status === true){
-            return response.success(`Data storage block ${dataId[2]} was saved successfully.`);
+            return response.success(`Data storage block ${(dataId.split('|'))[2]} was saved successfully.`);
         } else {
             return newRes;
         }
@@ -576,5 +584,58 @@ export class persona {
             return response.failed(`Data storage block ${id[2]} failed to update successfully.`);
         }
     }
+
+
+    /**
+     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * @param directoryPath - Directory you would like to save
+     * @param storageBlockId 
+     */
+    public async directorySaveToStorageBlock(directoryPath: string, storageBlockId:string, clearDirectory : boolean = false){
+        let fileDirectory = await recursive(directoryPath);
+        let directoryContent = [];
+        for (let index = 0; index < fileDirectory.length; index++) {
+            let name = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
+            directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : await (await this.loadFile(fileDirectory[index])).toString() });      
+        }
+        let response = await this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent });
+        if(clearDirectory) this.directoryClear(directoryPath);
+        return response;
+    }
+
+    /**
+     * Cretae a new directory baed on a storage block
+     * @param storageBlockId - Storage block that
+     * @param newLocation - (optional) Used for moving files to a new location.
+     */
+    public async directoryLoadFromStorageBlock(storageBlockId: string, newLocation: string = null){
+       let fileDirectory = await this.loadStorageBlock(storageBlockId);
+       try {
+            if(fileDirectory.status){
+                let files = JSON.parse(fileDirectory.data).files;
+                let thisPath = newLocation !== null ? newLocation : files[0].path;
+                for (let index = 0; index < files.length; index++) {
+                    if(newLocation === null){
+                        await this.updateFile(files[index].path, files[index].name, files[index].content);
+                    } else {
+                        await this.updateFile(files[index].path.replace(JSON.parse(fileDirectory.data).path, newLocation), files[index].name, files[index].content);
+                    }
+                }
+                return response.success(`Directory ${thisPath} successfully loaded from storage block.`);
+            } else {
+                return response.failed(`Data storage block called ${storageBlockId} was found.`);
+            }    
+        } catch {
+            return response.failed(`Data storage block ${storageBlockId} failed to load successfully.`);
+        }
+    }
+
+    /**
+     * Removes a directory and all files inside that directory
+     */
+    public directoryClear(directoryPath:string){
+        fs.rmdirSync(directoryPath, { recursive: true });
+    }
+
 
 }

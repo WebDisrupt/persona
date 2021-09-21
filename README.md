@@ -1,6 +1,6 @@
 
 
-# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-89.29%25-green)
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-91.43%25-green)
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -126,7 +126,7 @@ persona.saveProfile()
 
 ## Data Storage blocks
 
-What are Perona data storage blocks? A chunk of data that can take any format and has been  secured using AES 256 encryption. Each block contains a unique id that is referenced by the root file. Each block contains a randomly generated file id so it cannot be identified. The id is structured as radnomFilename|uniqueApplicationName|uniqueDataBlockName. Please make your unique application name very unique to avoid collissions with other applications. This reference will be stored in your persona.root file and can be referenced after intial login is performed. 
+What are Perona data storage blocks? A chunk of data that can take any format and has been secured using AES 256 encryption. Each block contains a unique id that is referenced by the root file. Each block contains a randomly generated file id so it cannot be identified. The id is structured as radnomFilename|uniqueApplicationName|uniqueDataBlockName. Please make your unique application name very unique to avoid collissions with other applications. This reference will be stored in your persona.root file and can be referenced after intial login is performed. 
 
 
 ### **Save Data Storage Block**
@@ -136,7 +136,7 @@ persona.saveStorageBlock("unique-id-string", "Whatever format or data you want t
 ```
 
 ### **Load Data Storage Block**
-Loads a block of data form an existing block. Note: The unique id can contain any character except **"|"** character. 
+Loads a block of data from an existing block. Note: The unique id can contain any character except **"|"** character. 
 ```javascript
 persona.loadStorageBlock("unique-id-string");
 ```
@@ -156,6 +156,26 @@ persona.loadStorageBlocks(dataObject);
 Deletes a storage block. Note: The unique id can contain any character except **"|"** character.
 ```javascript
 persona.deleteStorageBlock("unique-id-string");
+```
+
+
+
+### **Save a directory to a Data Storage Block**
+Saves a directory to a data storage block. This allows you to protect entire folders. Use the last argument tells this function whether to clear this directory after it is saved. The third argument is optional.
+```javascript
+persona.directorySaveToStorageBlock("directory/path", "unique-id-string", true);
+```
+
+### **Load a directory from a Data Storage Block**
+Creates a directory from loading a data storage block. This allows you to protect entire folders.
+```javascript
+persona.directoryLoadFromStorageBlock("unique-id-string");
+```
+
+### **Clears a directory off your computer**
+Clears a directory of your choice off of this computer.
+```javascript
+persona.directoryClear("directory/path");
 ```
 
 ## The Future

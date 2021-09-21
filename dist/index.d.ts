@@ -34,6 +34,14 @@ export declare class persona {
         data: any;
     };
     /**
+     *  Returns the current Persona's id or null if not loggedIn
+     */
+    getId(): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
+    /**
      * Return the currently loaded username inside the standard response body
      */
     getUsername(): {
@@ -268,4 +276,28 @@ export declare class persona {
      * @param content - contains a string of important data that is saved
      */
     private updateStorageBlock;
+    /**
+     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * @param directoryPath - Directory you would like to save
+     * @param storageBlockId
+     */
+    directorySaveToStorageBlock(directoryPath: string, storageBlockId: string, clearDirectory?: boolean): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
+    /**
+     * Cretae a new directory baed on a storage block
+     * @param storageBlockId - Storage block that
+     * @param newLocation - (optional) Used for moving files to a new location.
+     */
+    directoryLoadFromStorageBlock(storageBlockId: string, newLocation?: string): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
+    /**
+     * Removes a directory and all files inside that directory
+     */
+    directoryClear(directoryPath: string): void;
 }

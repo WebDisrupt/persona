@@ -47,6 +47,7 @@ var cypher_1 = require("./modules/cypher");
 var response_1 = require("./modules/response");
 var uuid = require('uuid-random');
 var fs = require("fs");
+var recursive = require("recursive-readdir");
 var promises_1 = require("fs/promises");
 var path = require("path");
 var persona = /** @class */ (function () {
@@ -63,7 +64,7 @@ var persona = /** @class */ (function () {
         this.system = "system"; // The system file naming convention
         this.appName = "default"; // Your application name
         this.path = "C:\\personas"; // Current Personas folder location
-        this.current = null; // The currently loaded Persona (Decrypted/unusable)
+        this.current = null; // The currently loaded Persona (Encrypted/unusable)
         this.recentList = []; // A list of all recently loaded personas
         this.previous = null; // Last opened Persona (usable)
         this.profile = null; // Stores version of profile data (usable)
@@ -143,8 +144,15 @@ var persona = /** @class */ (function () {
      * Return null if user was never loggedIn, returns previous if there was a previous persona user.
      */
     persona.prototype.isLoggedIn = function () {
-        return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in") :
+        return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in.") :
             this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.", this.previous) : response_1.response.failed("No user is currently logged in.", null);
+    };
+    /**
+     *  Returns the current Persona's id or null if not loggedIn
+     */
+    persona.prototype.getId = function () {
+        return this.username != null && this.password != null ? response_1.response.success(this.username + "'s id was found.", this.current.id) :
+            response_1.response.failed("No user is currently logged in.", null);
     };
     /**
      * Return the currently loaded username inside the standard response body
@@ -576,22 +584,19 @@ var persona = /** @class */ (function () {
      */
     persona.prototype.loadStorageBlock = function (dataId) {
         return __awaiter(this, void 0, void 0, function () {
-            var id, getProperId;
+            var getProperId;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId, true)];
+                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId, false)];
                     case 1:
-                        id = _a.sent();
-                        return [4 /*yield*/, this.setDataBlockID(dataId, false)];
-                    case 2:
                         getProperId = (_a.sent()).split("|");
                         return [4 /*yield*/, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 return __generator(this, function (_a) {
-                                    return [2 /*return*/, response_1.response.success("Data storage block was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
+                                    return [2 /*return*/, response_1.response.success("Data storage block " + dataId + " was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
                                 });
                             }); })];
-                    case 3: return [2 /*return*/, _a.sent()];
+                    case 2: return [2 /*return*/, _a.sent()];
                 }
             });
         });
@@ -629,7 +634,7 @@ var persona = /** @class */ (function () {
                     case 5:
                         newRes = _a;
                         if (newRes.status === true) {
-                            return [2 /*return*/, response_1.response.success("Data storage block " + dataId[2] + " was saved successfully.")];
+                            return [2 /*return*/, response_1.response.success("Data storage block " + (dataId.split('|'))[2] + " was saved successfully.")];
                         }
                         else {
                             return [2 /*return*/, newRes];
@@ -968,6 +973,100 @@ var persona = /** @class */ (function () {
                 }
             });
         });
+    };
+    /**
+     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * @param directoryPath - Directory you would like to save
+     * @param storageBlockId
+     */
+    persona.prototype.directorySaveToStorageBlock = function (directoryPath, storageBlockId, clearDirectory) {
+        if (clearDirectory === void 0) { clearDirectory = false; }
+        return __awaiter(this, void 0, void 0, function () {
+            var fileDirectory, directoryContent, index, name_1, _a, _b, response;
+            var _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0: return [4 /*yield*/, recursive(directoryPath)];
+                    case 1:
+                        fileDirectory = _d.sent();
+                        directoryContent = [];
+                        index = 0;
+                        _d.label = 2;
+                    case 2:
+                        if (!(index < fileDirectory.length)) return [3 /*break*/, 6];
+                        name_1 = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
+                        _b = (_a = directoryContent).push;
+                        _c = { path: fileDirectory[index].replace(name_1, ''), name: name_1.substr(("\\").length) };
+                        return [4 /*yield*/, this.loadFile(fileDirectory[index])];
+                    case 3: return [4 /*yield*/, (_d.sent()).toString()];
+                    case 4:
+                        _b.apply(_a, [(_c.content = _d.sent(), _c)]);
+                        _d.label = 5;
+                    case 5:
+                        index++;
+                        return [3 /*break*/, 2];
+                    case 6: return [4 /*yield*/, this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent })];
+                    case 7:
+                        response = _d.sent();
+                        if (clearDirectory)
+                            this.directoryClear(directoryPath);
+                        return [2 /*return*/, response];
+                }
+            });
+        });
+    };
+    /**
+     * Cretae a new directory baed on a storage block
+     * @param storageBlockId - Storage block that
+     * @param newLocation - (optional) Used for moving files to a new location.
+     */
+    persona.prototype.directoryLoadFromStorageBlock = function (storageBlockId, newLocation) {
+        if (newLocation === void 0) { newLocation = null; }
+        return __awaiter(this, void 0, void 0, function () {
+            var fileDirectory, files, thisPath, index, _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, this.loadStorageBlock(storageBlockId)];
+                    case 1:
+                        fileDirectory = _b.sent();
+                        _b.label = 2;
+                    case 2:
+                        _b.trys.push([2, 11, , 12]);
+                        if (!fileDirectory.status) return [3 /*break*/, 9];
+                        files = JSON.parse(fileDirectory.data).files;
+                        thisPath = newLocation !== null ? newLocation : files[0].path;
+                        index = 0;
+                        _b.label = 3;
+                    case 3:
+                        if (!(index < files.length)) return [3 /*break*/, 8];
+                        if (!(newLocation === null)) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.updateFile(files[index].path, files[index].name, files[index].content)];
+                    case 4:
+                        _b.sent();
+                        return [3 /*break*/, 7];
+                    case 5: return [4 /*yield*/, this.updateFile(files[index].path.replace(JSON.parse(fileDirectory.data).path, newLocation), files[index].name, files[index].content)];
+                    case 6:
+                        _b.sent();
+                        _b.label = 7;
+                    case 7:
+                        index++;
+                        return [3 /*break*/, 3];
+                    case 8: return [2 /*return*/, response_1.response.success("Directory " + thisPath + " successfully loaded from storage block.")];
+                    case 9: return [2 /*return*/, response_1.response.failed("Data storage block called " + storageBlockId + " was found.")];
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        _a = _b.sent();
+                        return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " failed to load successfully.")];
+                    case 12: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /**
+     * Removes a directory and all files inside that directory
+     */
+    persona.prototype.directoryClear = function (directoryPath) {
+        fs.rmdirSync(directoryPath, { recursive: true });
     };
     return persona;
 }());

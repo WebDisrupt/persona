@@ -1,12 +1,11 @@
 import { persona } from '../src/index';
 var fs = require("fs");
 
-// TODO change the persona root calls to add correct response 
-// Add multi-storage loading function
-
 const username = "john@doe.com"; 
 const password = "123456";
 const path = "C:\\personas-test";
+const mockedDirectory = "C:\\personas-test-directory";
+const mockedFiles = ["test_1.json", "test_2.txt", "test_3.exe" , "test_4.png"];
 
 let personaInstance = new persona({ appName: "default-app", path: path});
 
@@ -17,14 +16,44 @@ describe('No looping actions', () => {
     });
 
     test("Add to previous and check that it will load with system data.", async ()=>{
-
-
         await personaInstance.create(username, password, 1);
         personaInstance.unload();
         await personaInstance.load(username, password);
         personaInstance.unload();
         let systemData = await personaInstance.systemLoad();
         expect(systemData.data.previous.username).toBe(username);
+        await personaInstance.delete(username, password);
+    });
+
+    test("Check Saving Storage block without logged in Persona", async ()=>{
+        let thisId = "example-data-block";
+        let thisContent = JSON.stringify({ "data" : "The text you want to save" });
+        let saveblock = await personaInstance.saveStorageBlock(thisId, thisContent);
+        expect(saveblock.status).toBe(false);
+    });
+
+    
+    test("Save a mocked direrctory to a storage block and remove it after.", async ()=>{
+        await personaInstance.create(username, password);
+        let storageBlockName = "example-storage";
+        if(!fs.existsSync(mockedDirectory)){
+            fs.mkdirSync(mockedDirectory, { recursive: true });
+            for (let index = 0; index < mockedFiles.length; index++) {
+                fs.writeFileSync(`${mockedDirectory}\\${mockedFiles[index]}`, "");
+            }
+        }
+        expect((await personaInstance.directorySaveToStorageBlock(mockedDirectory, storageBlockName, true)).status).toBe(true);
+        expect(!fs.existsSync(mockedDirectory)).toBe(true);
+    });
+    
+
+    test("Load a mocked direrctory from a storage block and remove it after.", async ()=>{
+        await personaInstance.load(username, password);
+        let storageBlockName = "example-storage";
+        expect((await personaInstance.directoryLoadFromStorageBlock(storageBlockName)).status).toBe(true);
+        expect(fs.existsSync(mockedDirectory)).toBe(true);
+        await personaInstance.directoryLoadFromStorageBlock(storageBlockName);
+        personaInstance.directoryClear(mockedDirectory);
         await personaInstance.delete(username, password);
     });
 
@@ -43,6 +72,10 @@ describe('Persona Create and Delete Cycle.', () => {
     /// Persona Actions
     test("Create new Persona and load it", async ()=>{
         expect((await personaInstance.load(username, password)).status).toBe(true);
+    });
+
+    test("Get Persona id", ()=>{
+        expect(personaInstance.getId().status).toBe(true);
     });
 
     test("Check if Persona is logged in", async ()=>{
@@ -134,7 +167,7 @@ describe('Persona Create and Delete Cycle.', () => {
             exampleDataBlock2 : { "data" : "nothing loaded" },
             exampleDataBlock3 : { "data" : "Wasn't JSON loaded" },
             exampleDataBlock4 : { "data" : "defaulted" }
-        }
+        };
         let defaultObjectKeys = Object.keys(defaultObject);
         let thisContent = JSON.stringify({ "data" : "The text you want to save" });
         await personaInstance.saveStorageBlock(defaultObjectKeys[0], thisContent);
@@ -151,8 +184,8 @@ describe('Persona Create and Delete Cycle.', () => {
 });
 
 // Unload - Removes directory to test creating a new one on next run
-afterAll(() => {
+afterAll(() => {1
     return fs.rmdirSync(path, { recursive: true });
 });
-  
+
 
