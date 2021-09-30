@@ -1026,38 +1026,37 @@ var persona = /** @class */ (function () {
             var fileDirectory, files, thisPath, index, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, this.loadStorageBlock(storageBlockId)];
+                    case 0:
+                        _b.trys.push([0, 10, , 11]);
+                        return [4 /*yield*/, this.loadStorageBlock(storageBlockId)];
                     case 1:
                         fileDirectory = _b.sent();
-                        _b.label = 2;
-                    case 2:
-                        _b.trys.push([2, 11, , 12]);
-                        if (!fileDirectory.status) return [3 /*break*/, 9];
+                        if (!fileDirectory.status) return [3 /*break*/, 8];
                         files = JSON.parse(fileDirectory.data).files;
                         thisPath = newLocation !== null ? newLocation : files[0].path;
                         index = 0;
-                        _b.label = 3;
-                    case 3:
-                        if (!(index < files.length)) return [3 /*break*/, 8];
-                        if (!(newLocation === null)) return [3 /*break*/, 5];
+                        _b.label = 2;
+                    case 2:
+                        if (!(index < files.length)) return [3 /*break*/, 7];
+                        if (!(newLocation === null)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.updateFile(files[index].path, files[index].name, files[index].content)];
-                    case 4:
+                    case 3:
                         _b.sent();
-                        return [3 /*break*/, 7];
-                    case 5: return [4 /*yield*/, this.updateFile(files[index].path.replace(JSON.parse(fileDirectory.data).path, newLocation), files[index].name, files[index].content)];
+                        return [3 /*break*/, 6];
+                    case 4: return [4 /*yield*/, this.updateFile(files[index].path.replace(JSON.parse(fileDirectory.data).path, newLocation), files[index].name, files[index].content)];
+                    case 5:
+                        _b.sent();
+                        _b.label = 6;
                     case 6:
-                        _b.sent();
-                        _b.label = 7;
-                    case 7:
                         index++;
-                        return [3 /*break*/, 3];
-                    case 8: return [2 /*return*/, response_1.response.success("Directory " + thisPath + " successfully loaded from storage block.")];
-                    case 9: return [2 /*return*/, response_1.response.failed("Data storage block called " + storageBlockId + " was found.")];
-                    case 10: return [3 /*break*/, 12];
-                    case 11:
+                        return [3 /*break*/, 2];
+                    case 7: return [2 /*return*/, response_1.response.success("Directory " + thisPath + " successfully loaded from storage block.")];
+                    case 8: return [2 /*return*/, response_1.response.failed("Data storage block called " + storageBlockId + " was found.")];
+                    case 9: return [3 /*break*/, 11];
+                    case 10:
                         _a = _b.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " failed to load successfully.")];
-                    case 12: return [2 /*return*/];
+                        return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " failed to load.")];
+                    case 11: return [2 /*return*/];
                 }
             });
         });

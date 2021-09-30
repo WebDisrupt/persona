@@ -609,8 +609,8 @@ export class persona {
      * @param newLocation - (optional) Used for moving files to a new location.
      */
     public async directoryLoadFromStorageBlock(storageBlockId: string, newLocation: string = null){
-       let fileDirectory = await this.loadStorageBlock(storageBlockId);
        try {
+            let fileDirectory = await this.loadStorageBlock(storageBlockId);
             if(fileDirectory.status){
                 let files = JSON.parse(fileDirectory.data).files;
                 let thisPath = newLocation !== null ? newLocation : files[0].path;
@@ -626,7 +626,7 @@ export class persona {
                 return response.failed(`Data storage block called ${storageBlockId} was found.`);
             }    
         } catch {
-            return response.failed(`Data storage block ${storageBlockId} failed to load successfully.`);
+            return response.failed(`Data storage block ${storageBlockId} failed to load.`);
         }
     }
 
