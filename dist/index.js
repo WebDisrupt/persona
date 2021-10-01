@@ -982,32 +982,38 @@ var persona = /** @class */ (function () {
     persona.prototype.directorySaveToStorageBlock = function (directoryPath, storageBlockId, clearDirectory) {
         if (clearDirectory === void 0) { clearDirectory = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var fileDirectory, directoryContent, index, name_1, _a, _b, response;
-            var _c;
-            return __generator(this, function (_d) {
-                switch (_d.label) {
+            var fileDirectory, directoryContent, index, name_1, _a, _b, _c, response;
+            var _d;
+            return __generator(this, function (_e) {
+                switch (_e.label) {
                     case 0: return [4 /*yield*/, recursive(directoryPath)];
                     case 1:
-                        fileDirectory = _d.sent();
+                        fileDirectory = _e.sent();
                         directoryContent = [];
                         index = 0;
-                        _d.label = 2;
+                        _e.label = 2;
                     case 2:
-                        if (!(index < fileDirectory.length)) return [3 /*break*/, 6];
+                        if (!(index < fileDirectory.length)) return [3 /*break*/, 8];
+                        _e.label = 3;
+                    case 3:
+                        _e.trys.push([3, 6, , 7]);
                         name_1 = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
                         _b = (_a = directoryContent).push;
-                        _c = { path: fileDirectory[index].replace(name_1, ''), name: name_1.substr(("\\").length) };
+                        _d = { path: fileDirectory[index].replace(name_1, ''), name: name_1.substr(("\\").length) };
                         return [4 /*yield*/, this.loadFile(fileDirectory[index])];
-                    case 3: return [4 /*yield*/, (_d.sent()).toString()];
-                    case 4:
-                        _b.apply(_a, [(_c.content = _d.sent(), _c)]);
-                        _d.label = 5;
+                    case 4: return [4 /*yield*/, (_e.sent()).toString()];
                     case 5:
+                        _b.apply(_a, [(_d.content = _e.sent(), _d)]);
+                        return [3 /*break*/, 7];
+                    case 6:
+                        _c = _e.sent();
+                        return [3 /*break*/, 7];
+                    case 7:
                         index++;
                         return [3 /*break*/, 2];
-                    case 6: return [4 /*yield*/, this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent })];
-                    case 7:
-                        response = _d.sent();
+                    case 8: return [4 /*yield*/, this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent })];
+                    case 9:
+                        response = _e.sent();
                         if (clearDirectory)
                             this.directoryClear(directoryPath);
                         return [2 /*return*/, response];

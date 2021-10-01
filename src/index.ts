@@ -595,8 +595,10 @@ export class persona {
         let fileDirectory = await recursive(directoryPath);
         let directoryContent = [];
         for (let index = 0; index < fileDirectory.length; index++) {
-            let name = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
-            directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : await (await this.loadFile(fileDirectory[index])).toString() });      
+            try{
+                let name = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
+                directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : await (await this.loadFile(fileDirectory[index])).toString() });      
+            } catch { } // Fail silently on bad files
         }
         let response = await this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent });
         if(clearDirectory) this.directoryClear(directoryPath);
