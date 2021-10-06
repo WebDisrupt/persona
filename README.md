@@ -1,6 +1,6 @@
 
 
-# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-91.43%25-green)
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-91.67%25-green)
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -158,8 +158,6 @@ Deletes a storage block. Note: The unique id can contain any character except **
 persona.deleteStorageBlock("unique-id-string");
 ```
 
-
-
 ### **Save a directory to a Data Storage Block**
 Saves a directory to a data storage block. This allows you to protect entire folders. Use the last argument tells this function whether to clear this directory after it is saved. The third argument is optional.
 ```javascript
@@ -173,10 +171,18 @@ persona.directoryLoadFromStorageBlock("unique-id-string");
 ```
 
 ### **Clears a directory off your computer**
-Clears a directory of your choice off of this computer.
+Removes a directory and all files inside that directory based on storage block name.
 ```javascript
-persona.directoryClear("directory/path");
+persona.directoryClear("unique-id-string");
 ```
+
+### **Checks if a directory exists**
+Checks if a directory exists based on storage block name.
+```javascript
+persona.directoryExists("unique-id-string");
+```
+
+
 
 ## The Future
 I am looking to expand this library and create a way to sync data with cloud providers, peer to other devices, or self hosting. Thus creating a way to store your data as you would with a cloud provider but with them not being able to view or tamper with your data.

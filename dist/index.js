@@ -907,6 +907,24 @@ var persona = /** @class */ (function () {
         });
     };
     /**
+     * Get storage block path based on storage block id
+     * @param storageBlockId
+     * @returns
+     */
+    persona.prototype.getStorageBlockPath = function (storageBlockId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _b = (_a = JSON).parse;
+                        return [4 /*yield*/, this.loadStorageBlock(storageBlockId)];
+                    case 1: return [2 /*return*/, _b.apply(_a, [(_c.sent()).data]).path];
+                }
+            });
+        });
+    };
+    /**
      * Gets all the storage block that are defined inside the current Persona.
      * @returns
      */
@@ -1014,9 +1032,12 @@ var persona = /** @class */ (function () {
                     case 8: return [4 /*yield*/, this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent })];
                     case 9:
                         response = _e.sent();
-                        if (clearDirectory)
-                            this.directoryClear(directoryPath);
-                        return [2 /*return*/, response];
+                        if (!clearDirectory) return [3 /*break*/, 11];
+                        return [4 /*yield*/, this.directoryClear(storageBlockId)];
+                    case 10:
+                        _e.sent();
+                        _e.label = 11;
+                    case 11: return [2 /*return*/, response];
                 }
             });
         });
@@ -1068,10 +1089,57 @@ var persona = /** @class */ (function () {
         });
     };
     /**
-     * Removes a directory and all files inside that directory
+     * Removes a directory and all files inside that directory based on storage block name.
+     * @param storageBlockId - Name of the storage block
      */
-    persona.prototype.directoryClear = function (directoryPath) {
-        fs.rmdirSync(directoryPath, { recursive: true });
+    persona.prototype.directoryClear = function (storageBlockId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _d.trys.push([0, 2, , 3]);
+                        _b = (_a = fs).rmdirSync;
+                        return [4 /*yield*/, this.getStorageBlockPath(storageBlockId)];
+                    case 1:
+                        _b.apply(_a, [_d.sent(), { recursive: true }]);
+                        return [2 /*return*/, response_1.response.success("The storage block directory was deleted successfully.")];
+                    case 2:
+                        _c = _d.sent();
+                        return [2 /*return*/, response_1.response.failed("The storage block directory failed to be deleted.")];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /**
+     * Checks if a directory exists based on storage block name.
+     * @param storageBlockId - Name of the storage block
+     */
+    persona.prototype.directoryExists = function (storageBlockId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, _c;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        _d.trys.push([0, 2, , 3]);
+                        _b = (_a = fs).existsSync;
+                        return [4 /*yield*/, this.getStorageBlockPath(storageBlockId)];
+                    case 1:
+                        if (_b.apply(_a, [_d.sent()])) {
+                            return [2 /*return*/, response_1.response.success("The storage block folder exists.")];
+                        }
+                        else {
+                            return [2 /*return*/, response_1.response.failed("The storage block folder does not exist.")];
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        _c = _d.sent();
+                        return [2 /*return*/, response_1.response.failed("Failed to load corrupted storage block or you don't have the right access permissions")];
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
     };
     return persona;
 }());

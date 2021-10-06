@@ -36,14 +36,14 @@ describe('No looping actions', () => {
     test("Save a mocked direrctory to a storage block and remove it after.", async ()=>{
         await personaInstance.create(username, password);
         let storageBlockName = "example-storage";
-        if(!fs.existsSync(mockedDirectory)){
+        if(!(await personaInstance.directoryExists(storageBlockName)).status){
             fs.mkdirSync(mockedDirectory, { recursive: true });
             for (let index = 0; index < mockedFiles.length; index++) {
                 fs.writeFileSync(`${mockedDirectory}\\${mockedFiles[index]}`, "");
             }
         }
         expect((await personaInstance.directorySaveToStorageBlock(mockedDirectory, storageBlockName, true)).status).toBe(true);
-        expect(!fs.existsSync(mockedDirectory)).toBe(true);
+        expect(!(await personaInstance.directoryExists(storageBlockName)).status).toBe(true);
     });
     
 
@@ -51,7 +51,7 @@ describe('No looping actions', () => {
         await personaInstance.load(username, password);
         let storageBlockName = "example-storage";
         expect((await personaInstance.directoryLoadFromStorageBlock(storageBlockName)).status).toBe(true);
-        expect(fs.existsSync(mockedDirectory)).toBe(true);
+        expect((await personaInstance.directoryExists(storageBlockName)).status).toBe(true);
         await personaInstance.directoryLoadFromStorageBlock(storageBlockName);
         personaInstance.directoryClear(mockedDirectory);
         await personaInstance.delete(username, password);

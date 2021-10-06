@@ -256,6 +256,12 @@ export declare class persona {
      */
     private setDataBlockID;
     /**
+     * Get storage block path based on storage block id
+     * @param storageBlockId
+     * @returns
+     */
+    private getStorageBlockPath;
+    /**
      * Gets all the storage block that are defined inside the current Persona.
      * @returns
      */
@@ -297,7 +303,21 @@ export declare class persona {
         data: any;
     }>;
     /**
-     * Removes a directory and all files inside that directory
+     * Removes a directory and all files inside that directory based on storage block name.
+     * @param storageBlockId - Name of the storage block
      */
-    directoryClear(directoryPath: string): void;
+    directoryClear(storageBlockId: string): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
+    /**
+     * Checks if a directory exists based on storage block name.
+     * @param storageBlockId - Name of the storage block
+     */
+    directoryExists(storageBlockId: string): Promise<{
+        status: boolean;
+        message: string;
+        data: any;
+    }>;
 }

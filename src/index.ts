@@ -16,7 +16,7 @@ export { profile, profileAttribute };
 let uuid = require('uuid-random');
 var fs = require("fs");
 var recursive = require("recursive-readdir");
-import { readFile } from 'fs/promises';
+import { readFile, stat } from 'fs/promises';
 var path = require("path");
 
 export class persona {
@@ -540,6 +540,15 @@ export class persona {
         }
     }
 
+    /**
+     * Get storage block path based on storage block id
+     * @param storageBlockId 
+     * @returns 
+     */
+    private async getStorageBlockPath(storageBlockId: string){
+        return JSON.parse((await this.loadStorageBlock(storageBlockId)).data).path;
+     }
+
    /**
     * Gets all the storage block that are defined inside the current Persona.
     * @returns 
@@ -601,7 +610,7 @@ export class persona {
             } catch { } // Fail silently on bad files
         }
         let response = await this.saveStorageBlock(storageBlockId, { path: directoryPath, files: directoryContent });
-        if(clearDirectory) this.directoryClear(directoryPath);
+        if(clearDirectory) await this.directoryClear(storageBlockId);
         return response;
     }
 
@@ -633,11 +642,35 @@ export class persona {
     }
 
     /**
-     * Removes a directory and all files inside that directory
+     * Removes a directory and all files inside that directory based on storage block name.
+     * @param storageBlockId - Name of the storage block
      */
-    public directoryClear(directoryPath:string){
-        fs.rmdirSync(directoryPath, { recursive: true });
+    public async directoryClear(storageBlockId:string){
+        try {
+            fs.rmdirSync(await this.getStorageBlockPath(storageBlockId), { recursive: true });
+            return response.success("The storage block directory was deleted successfully.");
+        } catch {
+            return response.failed("The storage block directory failed to be deleted.");
+        }
     }
+
+    /**
+     * Checks if a directory exists based on storage block name.
+     * @param storageBlockId - Name of the storage block
+     */
+    public async directoryExists(storageBlockId: string){
+        try {
+            if(fs.existsSync(await this.getStorageBlockPath(storageBlockId))){
+                return response.success("The storage block folder exists.");
+            } else {
+                return response.failed("The storage block folder does not exist.");
+            }
+        } catch {
+            return response.failed("Failed to load corrupted storage block or you don't have the right access permissions");
+        }
+    }
+
+
 
 
 }
