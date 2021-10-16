@@ -321,25 +321,30 @@ export class persona {
 
     /**
      * Loads a block of data form an existing block.
-     * @param dataId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
+     * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
      * @returns 
      */
-    public async loadStorageBlock(dataId : string){
-        let getProperId = (await this.setDataBlockID(dataId, false)).split("|");
-        return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`).then( async (content) => {
-            return response.success(`Data storage block ${dataId} was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
-        });
+    public async loadStorageBlock(storageBlockId : string){
+        let getProperId = (await this.setDataBlockID(storageBlockId, false)).split("|");
+       if(!fs.existsSync(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`)){
+            this.removeStorageBlockFromList(storageBlockId);
+            return response.failed(`Data storage block ${storageBlockId} doesn't exist.`, `${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`);
+       } else {
+            return await this.loadFile(`${this.path}\\${this.current.id}\\${getProperId[0]}${this.blockExt}`).then( async (content) => {
+                return response.success(`Data storage block ${storageBlockId} was loaded successfully.`, cypher.decrypt(content.toString(), this.password+this.username));
+            });
+        }
     }
 
     /**
      * Saves a block of data to an existing block or creates a new block.
-     * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
+     * @param storageBlockId - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
      * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns 
      */
-    public async saveStorageBlock(dataId: string, content:any){
+    public async saveStorageBlock(storageBlockId: string, content:any){
         if(typeof content !== "string") content = JSON.stringify(content);
-        dataId = await this.setDataBlockID(dataId);
+        let dataId = await this.setDataBlockID(storageBlockId);
         if(this.current === null) return response.failed("No profile loaded.");
         if(dataId === undefined || dataId === null) return response.failed("No storage id provided.");
         let newRes = this.doesStorageBlockIdExist(dataId) ? await this.updateStorageBlock(dataId, content) : await this.createStorageBlock(dataId, content);
@@ -352,11 +357,11 @@ export class persona {
 
     /**
      * Delete a storage block
-     * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
+     * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
      */
-    public async deleteStorageBlock(dataId : string = null) {
+    public async deleteStorageBlock(storageBlockId : string = null) {
         let personaId = await this.find(this.username, this.password);
-        dataId = await this.setDataBlockID(dataId);
+        let dataId = await this.setDataBlockID(storageBlockId);
         if(personaId !== null){
             if(dataId === null){
                 let files : Array<string> = await fs.promises.readdir(this.path+"\\"+personaId);
@@ -545,9 +550,9 @@ export class persona {
      * @param storageBlockId 
      * @returns 
      */
-    private async getStorageBlockPath(storageBlockId: string){
+    public async getStorageBlockDirectoryPath(storageBlockId: string){
         return JSON.parse((await this.loadStorageBlock(storageBlockId)).data).path;
-     }
+    }
 
    /**
     * Gets all the storage block that are defined inside the current Persona.
@@ -560,6 +565,22 @@ export class persona {
             return response.success(`All storage blocks listed.`, newLinkList);
         } else {
             return response.failed(`Can't list storage blocks, please login.`, []); 
+        }
+    }
+
+   /**
+    * Gets all the storage block that are defined inside the current Persona.
+    * @returns 
+    */
+    public removeStorageBlockFromList(storageBlockId: string) {
+        try{
+            let indexToRemove = this.current.link.findIndex((item) => { 
+                return (cypher.decrypt(item, this.password+this.username).split("|"))[2] === storageBlockId; 
+            });
+            this.current.link.splice(indexToRemove, 1);
+            return response.success(`Storage block not found so it was removed from the link object.`);
+        } catch {
+            return response.failed(`Failed to remove element at index because it doesn't exist on link object.`); 
         }
     }
 
@@ -596,7 +617,7 @@ export class persona {
 
 
     /**
-     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * Save the entire file structure inside a directory to a storage block. Does not save empty directories
      * @param directoryPath - Directory you would like to save
      * @param storageBlockId 
      */
@@ -615,7 +636,7 @@ export class persona {
     }
 
     /**
-     * Cretae a new directory baed on a storage block
+     * Create a new directory baed on a storage block
      * @param storageBlockId - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
@@ -634,8 +655,9 @@ export class persona {
                 }
                 return response.success(`Directory ${thisPath} successfully loaded from storage block.`);
             } else {
+
                 return response.failed(`Data storage block called ${storageBlockId} was found.`);
-            }    
+            }
         } catch {
             return response.failed(`Data storage block ${storageBlockId} failed to load.`);
         }
@@ -647,7 +669,7 @@ export class persona {
      */
     public async directoryClear(storageBlockId:string){
         try {
-            fs.rmdirSync(await this.getStorageBlockPath(storageBlockId), { recursive: true });
+            fs.rmdirSync(await this.getStorageBlockDirectoryPath(storageBlockId), { recursive: true });
             return response.success("The storage block directory was deleted successfully.");
         } catch {
             return response.failed("The storage block directory failed to be deleted.");
@@ -660,7 +682,7 @@ export class persona {
      */
     public async directoryExists(storageBlockId: string){
         try {
-            if(fs.existsSync(await this.getStorageBlockPath(storageBlockId))){
+            if(fs.existsSync(await this.getStorageBlockDirectoryPath(storageBlockId))){
                 return response.success("The storage block folder exists.");
             } else {
                 return response.failed("The storage block folder does not exist.");

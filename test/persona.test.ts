@@ -4,8 +4,10 @@ var fs = require("fs");
 const username = "john@doe.com"; 
 const password = "123456";
 const path = "C:\\personas-test";
+const dirStorageBlock = "example-storage";
 const mockedDirectory = "C:\\personas-test-directory";
 const mockedFiles = ["test_1.json", "test_2.txt", "test_3.exe" , "test_4.png"];
+const mockedFileAddtion = "test.cache";
 
 let personaInstance = new persona({ appName: "default-app", path: path});
 
@@ -35,26 +37,34 @@ describe('No looping actions', () => {
     
     test("Save a mocked direrctory to a storage block and remove it after.", async ()=>{
         await personaInstance.create(username, password);
-        let storageBlockName = "example-storage";
-        if(!(await personaInstance.directoryExists(storageBlockName)).status){
+        if(!(await personaInstance.directoryExists(dirStorageBlock)).status){
             fs.mkdirSync(mockedDirectory, { recursive: true });
             for (let index = 0; index < mockedFiles.length; index++) {
                 fs.writeFileSync(`${mockedDirectory}\\${mockedFiles[index]}`, "");
             }
         }
-        expect((await personaInstance.directorySaveToStorageBlock(mockedDirectory, storageBlockName, true)).status).toBe(true);
-        expect(!(await personaInstance.directoryExists(storageBlockName)).status).toBe(true);
+        expect((await personaInstance.directorySaveToStorageBlock(mockedDirectory, dirStorageBlock, true)).status).toBe(true);
+        expect(!(await personaInstance.directoryExists(dirStorageBlock)).status).toBe(true);
     });
     
-
-    test("Load a mocked direrctory from a storage block and remove it after.", async ()=>{
+    test("Load a mocked direrctory from a storage block.", async ()=>{
         await personaInstance.load(username, password);
-        let storageBlockName = "example-storage";
-        expect((await personaInstance.directoryLoadFromStorageBlock(storageBlockName)).status).toBe(true);
-        expect((await personaInstance.directoryExists(storageBlockName)).status).toBe(true);
-        await personaInstance.directoryLoadFromStorageBlock(storageBlockName);
-        personaInstance.directoryClear(mockedDirectory);
-        await personaInstance.delete(username, password);
+        expect((await personaInstance.directoryLoadFromStorageBlock(dirStorageBlock)).status).toBe(true);
+        expect((await personaInstance.directoryExists(dirStorageBlock)).status).toBe(true);
+    });
+
+    test("Save over a storage block and load again to test the cycle of change.", async ()=>{ 
+        let pathToNewFile = `${mockedDirectory}\\${mockedFileAddtion}`;
+        fs.writeFileSync(pathToNewFile, "");
+        expect((await personaInstance.directorySaveToStorageBlock(mockedDirectory, dirStorageBlock, true)).status).toBe(true);
+        expect((await personaInstance.directoryLoadFromStorageBlock(dirStorageBlock)).status).toBe(true);
+        expect( fs.existsSync(pathToNewFile) ).toBe(true);
+    });
+
+    test("Clean up a directory after it has been created.", async ()=>{
+        expect((await personaInstance.directoryClear(dirStorageBlock)).status).toBe(true);
+        expect((await personaInstance.delete(username, password)).status).toBe(true);
+        expect((await personaInstance.directoryExists(dirStorageBlock)).status).toBe(false);
     });
 
 });
@@ -138,6 +148,22 @@ describe('Persona Create and Delete Cycle.', () => {
         // as object
         await personaInstance.saveStorageBlock(thisId+"2", thisContent);
         expect((await personaInstance.loadStorageBlock(thisId)).data).toBe(JSON.stringify(thisContent));
+    });
+
+    test("Load a storage block that doesn't exist, check that it is removed from the storage block list.", async ()=>{
+        let thisId = "example-data-block";
+        let thisId2 = "example-data-block-2";
+        let thisId3 = "example-data-block-3";
+        let thisContent = "The text you want to save";
+        await personaInstance.saveStorageBlock(thisId, thisContent);
+        await personaInstance.saveStorageBlock(thisId2, thisContent);
+        await personaInstance.saveStorageBlock(thisId3, thisContent);
+        expect(personaInstance.getStorageBlockList().data.length).toBe(3);
+        let thisId2FileName = personaInstance.getStorageBlockList().data.find((item : string)=>{ return item.split("|")[2] === thisId2 }).split("|")[0]; 
+        fs.unlinkSync(`${path}\\${personaInstance.getId().data}\\${thisId2FileName}.pstore`);
+        await personaInstance.loadStorageBlock(thisId2);
+        expect(personaInstance.getStorageBlockList().data.length).toBe(2);
+        
     });
 
     test("Update a single data storage block.", async ()=>{

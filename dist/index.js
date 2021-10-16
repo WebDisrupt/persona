@@ -579,43 +579,46 @@ var persona = /** @class */ (function () {
     };
     /**
      * Loads a block of data form an existing block.
-     * @param dataId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
+     * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
      * @returns
      */
-    persona.prototype.loadStorageBlock = function (dataId) {
+    persona.prototype.loadStorageBlock = function (storageBlockId) {
         return __awaiter(this, void 0, void 0, function () {
             var getProperId;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.setDataBlockID(dataId, false)];
+                    case 0: return [4 /*yield*/, this.setDataBlockID(storageBlockId, false)];
                     case 1:
                         getProperId = (_a.sent()).split("|");
-                        return [4 /*yield*/, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    return [2 /*return*/, response_1.response.success("Data storage block " + dataId + " was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
-                                });
-                            }); })];
-                    case 2: return [2 /*return*/, _a.sent()];
+                        if (!!fs.existsSync(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt)) return [3 /*break*/, 2];
+                        this.removeStorageBlockFromList(storageBlockId);
+                        return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " doesn't exist.", this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt)];
+                    case 2: return [4 /*yield*/, this.loadFile(this.path + "\\" + this.current.id + "\\" + getProperId[0] + this.blockExt).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                            return __generator(this, function (_a) {
+                                return [2 /*return*/, response_1.response.success("Data storage block " + storageBlockId + " was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.password + this.username))];
+                            });
+                        }); })];
+                    case 3: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     };
     /**
      * Saves a block of data to an existing block or creates a new block.
-     * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
+     * @param storageBlockId - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
      * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns
      */
-    persona.prototype.saveStorageBlock = function (dataId, content) {
+    persona.prototype.saveStorageBlock = function (storageBlockId, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var newRes, _a;
+            var dataId, newRes, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         if (typeof content !== "string")
                             content = JSON.stringify(content);
-                        return [4 /*yield*/, this.setDataBlockID(dataId)];
+                        return [4 /*yield*/, this.setDataBlockID(storageBlockId)];
                     case 1:
                         dataId = _b.sent();
                         if (this.current === null)
@@ -646,19 +649,19 @@ var persona = /** @class */ (function () {
     };
     /**
      * Delete a storage block
-     * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
+     * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
      */
-    persona.prototype.deleteStorageBlock = function (dataId) {
-        if (dataId === void 0) { dataId = null; }
+    persona.prototype.deleteStorageBlock = function (storageBlockId) {
+        if (storageBlockId === void 0) { storageBlockId = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var personaId, files;
+            var personaId, dataId, files;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.find(this.username, this.password)];
                     case 1:
                         personaId = _a.sent();
-                        return [4 /*yield*/, this.setDataBlockID(dataId)];
+                        return [4 /*yield*/, this.setDataBlockID(storageBlockId)];
                     case 2:
                         dataId = _a.sent();
                         if (!(personaId !== null)) return [3 /*break*/, 6];
@@ -911,7 +914,7 @@ var persona = /** @class */ (function () {
      * @param storageBlockId
      * @returns
      */
-    persona.prototype.getStorageBlockPath = function (storageBlockId) {
+    persona.prototype.getStorageBlockDirectoryPath = function (storageBlockId) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b;
             return __generator(this, function (_c) {
@@ -937,6 +940,23 @@ var persona = /** @class */ (function () {
         }
         else {
             return response_1.response.failed("Can't list storage blocks, please login.", []);
+        }
+    };
+    /**
+     * Gets all the storage block that are defined inside the current Persona.
+     * @returns
+     */
+    persona.prototype.removeStorageBlockFromList = function (storageBlockId) {
+        var _this = this;
+        try {
+            var indexToRemove = this.current.link.findIndex(function (item) {
+                return (cypher_1.cypher.decrypt(item, _this.password + _this.username).split("|"))[2] === storageBlockId;
+            });
+            this.current.link.splice(indexToRemove, 1);
+            return response_1.response.success("Storage block not found so it was removed from the link object.");
+        }
+        catch (_a) {
+            return response_1.response.failed("Failed to remove element at index because it doesn't exist on link object.");
         }
     };
     /**
@@ -993,7 +1013,7 @@ var persona = /** @class */ (function () {
         });
     };
     /**
-     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * Save the entire file structure inside a directory to a storage block. Does not save empty directories
      * @param directoryPath - Directory you would like to save
      * @param storageBlockId
      */
@@ -1043,7 +1063,7 @@ var persona = /** @class */ (function () {
         });
     };
     /**
-     * Cretae a new directory baed on a storage block
+     * Create a new directory baed on a storage block
      * @param storageBlockId - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
@@ -1100,7 +1120,7 @@ var persona = /** @class */ (function () {
                     case 0:
                         _d.trys.push([0, 2, , 3]);
                         _b = (_a = fs).rmdirSync;
-                        return [4 /*yield*/, this.getStorageBlockPath(storageBlockId)];
+                        return [4 /*yield*/, this.getStorageBlockDirectoryPath(storageBlockId)];
                     case 1:
                         _b.apply(_a, [_d.sent(), { recursive: true }]);
                         return [2 /*return*/, response_1.response.success("The storage block directory was deleted successfully.")];
@@ -1124,7 +1144,7 @@ var persona = /** @class */ (function () {
                     case 0:
                         _d.trys.push([0, 2, , 3]);
                         _b = (_a = fs).existsSync;
-                        return [4 /*yield*/, this.getStorageBlockPath(storageBlockId)];
+                        return [4 /*yield*/, this.getStorageBlockDirectoryPath(storageBlockId)];
                     case 1:
                         if (_b.apply(_a, [_d.sent()])) {
                             return [2 /*return*/, response_1.response.success("The storage block folder exists.")];

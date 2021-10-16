@@ -167,30 +167,30 @@ export declare class persona {
     }>;
     /**
      * Loads a block of data form an existing block.
-     * @param dataId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
+     * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
      * @returns
      */
-    loadStorageBlock(dataId: string): Promise<{
+    loadStorageBlock(storageBlockId: string): Promise<{
         status: boolean;
         message: string;
         data: any;
     }>;
     /**
      * Saves a block of data to an existing block or creates a new block.
-     * @param id - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
+     * @param storageBlockId - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
      * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
      * @returns
      */
-    saveStorageBlock(dataId: string, content: any): Promise<{
+    saveStorageBlock(storageBlockId: string, content: any): Promise<{
         status: boolean;
         message: string;
         data: any;
     }>;
     /**
      * Delete a storage block
-     * @param dataId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
+     * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
      */
-    deleteStorageBlock(dataId?: string): Promise<{
+    deleteStorageBlock(storageBlockId?: string): Promise<{
         status: boolean;
         message: string;
         data: any;
@@ -260,12 +260,21 @@ export declare class persona {
      * @param storageBlockId
      * @returns
      */
-    private getStorageBlockPath;
+    getStorageBlockDirectoryPath(storageBlockId: string): Promise<any>;
     /**
      * Gets all the storage block that are defined inside the current Persona.
      * @returns
      */
     getStorageBlockList(): {
+        status: boolean;
+        message: string;
+        data: any;
+    };
+    /**
+     * Gets all the storage block that are defined inside the current Persona.
+     * @returns
+     */
+    removeStorageBlockFromList(storageBlockId: string): {
         status: boolean;
         message: string;
         data: any;
@@ -283,7 +292,7 @@ export declare class persona {
      */
     private updateStorageBlock;
     /**
-     * Save the entire file structure inside a Directory to a storage block. Does not save empty directories
+     * Save the entire file structure inside a directory to a storage block. Does not save empty directories
      * @param directoryPath - Directory you would like to save
      * @param storageBlockId
      */
@@ -293,7 +302,7 @@ export declare class persona {
         data: any;
     }>;
     /**
-     * Cretae a new directory baed on a storage block
+     * Create a new directory baed on a storage block
      * @param storageBlockId - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
