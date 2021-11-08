@@ -14,7 +14,11 @@ export class cypher {
      * @returns 32 character key with most important factors taking precident
      */
     private static getKey(key:string){
-        return key.length <= 32 ? key + this.ENCRYPTION_KEY.slice(key.length) : key.slice(0, 32);
+        try{
+            return key.length <= 32 ? key + this.ENCRYPTION_KEY.slice(key.length) : key.slice(0, 32);
+        } catch {
+            throw new Error("Encryption key is null or undefined.");    
+        }
     }
 
     /**
@@ -36,7 +40,7 @@ export class cypher {
      * Decrypt using secure encryption process. If it fails then return an empty string.
      * @param text - String to decrypt
      * @param key - Key used to dynamically strengthen encryption
-     * @returns 
+     * @returns - decrypted string
      */
     public static decrypt(text:string, key:string = "") {
         let decrypted;

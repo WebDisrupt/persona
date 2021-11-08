@@ -21,5 +21,5 @@ export interface personaOptions {
     appName?:string, // A unique ID that represents your application
     path?:string, // A default path where personas are stored
     previous?: personaSeed, // The most recently logged in user
-    recentList?:Array<personaSeed> // A list of all rcently logged in users
+    recentList?:Array<personaSeed>, // A list of all rcently logged in users
 }
