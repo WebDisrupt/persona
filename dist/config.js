@@ -2,13 +2,13 @@
 exports.__esModule = true;
 exports.defaults = void 0;
 var defaults = {
-    root: "root",
-    system: "system",
+    appName: "default",
+    path: "C:\\personas",
     ext: ".persona",
     blockExt: ".pstore",
-    versionName: "pstore.ver",
-    appName: "default",
-    path: "C:\\personas" // Current Personas folder location
+    root: "root.persona",
+    system: "system.persona",
+    versionName: "pstore.ver"
 };
 exports.defaults = defaults;
 //# sourceMappingURL=config.js.map

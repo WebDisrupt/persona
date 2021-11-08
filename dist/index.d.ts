@@ -4,6 +4,7 @@
 import { hashStrength, hashStrengthDetails } from './models/hash-strength';
 import { personaRoot, personaSeed, personaOptions } from './models/persona-root';
 import { profile, profileAttribute } from './models/profile';
+import { modules } from './models/module';
 export { hashStrength, hashStrengthDetails };
 export { personaRoot, personaSeed, personaOptions };
 export { profile, profileAttribute };
@@ -16,6 +17,8 @@ export declare class persona {
     private profile;
     private username;
     private password;
+    private key;
+    module: modules;
     /**
      * Constructor - Used to assign personaOptions.
      * @param options
@@ -44,12 +47,6 @@ export declare class persona {
      */
     saveProfile(newProfile: profile): Promise<import("./models/response").Response>;
     /**
-     * Switches to a new profile
-     * @param username
-     * @param password
-     */
-    switch(username: string, password: string): Promise<import("./models/response").Response>;
-    /**
      * Get all recently loaded profiles
      * @returns
      */
@@ -72,6 +69,15 @@ export declare class persona {
      * @returns
      */
     unload(): Promise<import("./models/response").Response>;
+    /**
+     * Login will handle all the init functions after a new user is created or loaded
+     */
+    private login;
+    /**
+     * Load modules - Refreshes modules with new data, and removes any stale data
+     * @returns
+     */
+    private loadModules;
     /**
      * Find Persona based on username. Use password to decrypt. Load additional storage blocks based on datamap parameter.
      * @param username - Unique username associated with the Persona.
@@ -112,109 +118,4 @@ export declare class persona {
      * @returns
      */
     private generatePersonaId;
-    /**
-     * Checks whether the storage block id exists.
-     * @param id - pass in the storage block id
-     * @returns
-     */
-    SB_doesIdExist(storageBlockId: string): boolean;
-    /**
-     * Check if storage block exists
-     * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
-     * @returns {boolean}
-     */
-    SB_exist(storageBlockId: string): Promise<boolean>;
-    /**
-     * Returns a properly formated data block id. You can pass in an encrypted, or decrypted version, or just a data block name.
-     * @param unkown Takes an id in an unknown state
-     * @param encrypt returns it encrupted or dcrypted
-     * @returns
-     */
-    SB_formatId(unknown: string, encrypt?: boolean): Promise<any>;
-    /**
-     * Loads a block of data form an existing block.
-     * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
-     * @returns
-     */
-    SB_load(storageBlockId: string): Promise<import("./models/response").Response>;
-    /**
-     * Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding objectMap property.
-     * @param objectMap An object, it will always try to load storage block for every property. If it fails then it will perserve the currently assigned data.
-     * @returns passes back a new object that mimics the previous
-     */
-    SB_loadAll(objectMap?: any): Promise<import("./models/response").Response>;
-    /**
-     * Saves a block of data to an existing block or creates a new block.
-     * @param storageBlockId - Required to identify where, how, and when this data will be used in your application. Cannot contain '|' chaacter.
-     * @param content - An object, collection, or string that can be formated how ever you would like to consume it with your application.
-     * @returns
-     */
-    SB_save(storageBlockId: string, content: any): Promise<import("./models/response").Response>;
-    /**
-     * Creates a new storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private SB_create;
-    /**
-     * Updates an existing Storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private SB_update;
-    /**
-     * Delete a storage block
-     * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
-     */
-    SB_delete(storageBlockId?: string): Promise<import("./models/response").Response>;
-    /**
-    * Gets all the storage block that are defined inside the current Persona.
-    * @returns
-    */
-    SB_getList(): import("./models/response").Response;
-    /**
-    * Gets all the storage block that are defined inside the current Persona.
-    * @returns
-    */
-    SB_removeFromList(storageBlockId: string): import("./models/response").Response;
-    /**
-     * Save the entire file structure inside a directory to a storage block. Does not save empty directories
-     * @param directoryPath - Directory you would like to save
-     * @param storageBlockId
-     */
-    SBD_save(directoryPath: string, storageBlockId: string, clearDirectory?: boolean): Promise<import("./models/response").Response>;
-    /**
-     * Create a new directory baed on a storage block
-     * @param storageBlockId - Storage block that
-     * @param newLocation - (optional) Used for moving files to a new location.
-     */
-    SBD_load(storageBlockId: string, newLocation?: string): Promise<import("./models/response").Response>;
-    /**
-     * Get storage block path based on storage block id
-     * @param storageBlockId
-     * @returns
-     */
-    SBD_getDirectoryPath(storageBlockId: string): Promise<any>;
-    /**
-     * Storage Block Directory - Get version from the pstore.version file inside the directory
-     * @param storageBlockId - Storage block that
-     * @return New version
-     */
-    SBD_getFileVersion(storageBlockId: string): Promise<number>;
-    /**
-     * Storage Block not having
-     * @param storageBlockId - Storage block that
-     * @return New version
-     */
-    SBD_increaseVersion(storageBlockId: string): Promise<number>;
-    /**
-     * Removes a directory and all files inside that directory based on storage block name.
-     * @param storageBlockId - Name of the storage block
-     */
-    SBD_clearDirectory(storageBlockId: string): Promise<import("./models/response").Response>;
-    /**
-     * Checks if a directory exists based on storage block name.
-     * @param storageBlockId - Name of the storage block
-     */
-    SBD_doesDirectoryExist(storageBlockId: string): Promise<import("./models/response").Response>;
 }

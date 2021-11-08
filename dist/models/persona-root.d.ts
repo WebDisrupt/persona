@@ -20,5 +20,4 @@ export interface personaOptions {
     path?: string;
     previous?: personaSeed;
     recentList?: Array<personaSeed>;
-    modules?: Array<string>;
 }
