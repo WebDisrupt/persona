@@ -1,6 +1,6 @@
 import { moduleOptions } from '../models/module';
-import { StorageBlock } from '../modules/storage-block';
-export declare class StorageBlockDirectory extends StorageBlock {
+import { BaseStorageBlock } from '../core/storage-block-core';
+export declare class StorageBlockDirectory extends BaseStorageBlock {
     /**
      * Constructor - Used to assign personaOptions.
      * @param options
@@ -11,19 +11,19 @@ export declare class StorageBlockDirectory extends StorageBlock {
      * @param directoryPath - Directory you would like to save
      * @param storageBlockName
      */
-    dirSave(directoryPath: string, storageBlockName: string, clearDirectory?: boolean): Promise<import("../models/response").Response>;
+    save(directoryPath: string, storageBlockName: string, clearDirectory?: boolean): Promise<import("../models/response").Response>;
     /**
      * Create a new directory baed on a storage block
      * @param storageBlockName - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
-    dirLoad(storageBlockName: string, newLocation?: string): Promise<import("../models/response").Response>;
+    load(storageBlockName: string, newLocation?: string): Promise<import("../models/response").Response>;
     /**
      * Get storage block path based on storage block id
      * @param storageBlockName
      * @returns
      */
-    dirPath(storageBlockName: string): Promise<import("../models/response").Response>;
+    getDirectoryPath(storageBlockName: string): Promise<import("../models/response").Response>;
     /**
      * Storage Block Directory - Get version from the pstore.version file inside the directory
      * @param storageBlockName - Storage block that
@@ -41,10 +41,10 @@ export declare class StorageBlockDirectory extends StorageBlock {
      * Removes a directory and all files inside that directory based on storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    dirRemove(storageBlockName: string): Promise<import("../models/response").Response>;
+    removeDirectory(storageBlockName: string): Promise<import("../models/response").Response>;
     /**
      * Checks if a directory exists based on the provided storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    dirExists(storageBlockName: string): Promise<import("../models/response").Response>;
+    checkDirectory(storageBlockName: string): Promise<import("../models/response").Response>;
 }

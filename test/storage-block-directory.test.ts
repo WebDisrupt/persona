@@ -36,15 +36,15 @@ for (let index = 0; index < mockedFiles.length; index++) {
 describe('Storage Block Directory Module', () => {
 
     test("Load from a storage block that doesn't exist.", async ()=>{
-        expect((await storageBlockDirectory.dirLoad(dirStorageBlock)).status).toBe(false);
+        expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(false);
     });
 
     test("Check if a directory exists.", async ()=>{
-        expect(!(await storageBlockDirectory.dirExists(dirStorageBlock)).status).toBe(true);
+        expect(!(await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(true);
     });
     
     test("Save a direrctory to a storage block.", async ()=>{
-        expect((await storageBlockDirectory.dirSave(mockedDirectory, dirStorageBlock)).status).toBe(true);
+        expect((await storageBlockDirectory.save(mockedDirectory, dirStorageBlock)).status).toBe(true);
     });
 
     test("Check the getter and setter for directory file versioning.", async ()=>{
@@ -54,23 +54,23 @@ describe('Storage Block Directory Module', () => {
     });
 
    test("Check loading stale content using directory file versioning.", async ()=>{
-        await storageBlockDirectory.dirSave(mockedDirectory, dirStorageBlock);
+        await storageBlockDirectory.save(mockedDirectory, dirStorageBlock);
         await storageBlockDirectory.setVersionFile(dirStorageBlock, 1);
-        expect((await storageBlockDirectory.dirLoad(dirStorageBlock)).status).toBe(false);
+        expect((await storageBlockDirectory.load(dirStorageBlock)).status).toBe(false);
     });
 
     test("Remove a specified directory.", async ()=>{
-        expect((await storageBlockDirectory.dirRemove(dirStorageBlock)).status).toBe(true);
-        expect((await storageBlockDirectory.dirExists(dirStorageBlock)).status).toBe(false);
+        expect((await storageBlockDirectory.removeDirectory(dirStorageBlock)).status).toBe(true);
+        expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(false);
     });
 
     test("Remove a specified directory for a storage block that doesn't exist.", async ()=>{
-        expect((await storageBlockDirectory.dirRemove(dirStorageBlock+"-bad-name")).status).toBe(false);
+        expect((await storageBlockDirectory.removeDirectory(dirStorageBlock+"-bad-name")).status).toBe(false);
     });
 
     test("Load a storage block", async ()=>{ 
-        expect((await storageBlockDirectory.dirLoad(dirStorageBlock)).status).toBe(true);
-        expect((await storageBlockDirectory.dirExists(dirStorageBlock)).status).toBe(true);
+        expect((await storageBlockDirectory.load(dirStorageBlock)).status).toBe(true);
+        expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(true);
     });
 
 });

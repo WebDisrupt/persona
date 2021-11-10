@@ -6,11 +6,12 @@ import { response } from '../helpers/response';
 import { personaRoot } from '../models/persona-root';
 import { moduleOptions } from '../models/module';
 import { StorageBlock } from '../modules/storage-block'
+import { BaseStorageBlock } from '../core/storage-block-core';
 
 var recursive = require("recursive-readdir");
 var fs = require("fs");
 
-export class StorageBlockDirectory extends StorageBlock {
+export class StorageBlockDirectory extends BaseStorageBlock {
 
     /**
      * Constructor - Used to assign personaOptions.
@@ -25,7 +26,7 @@ export class StorageBlockDirectory extends StorageBlock {
      * @param directoryPath - Directory you would like to save
      * @param storageBlockName 
      */
-    public async dirSave(directoryPath: string, storageBlockName:string, clearDirectory : boolean = false){
+    public async save(directoryPath: string, storageBlockName:string, clearDirectory : boolean = false){
         let previousVersion : number = (await this.load(storageBlockName)).data?.version || 0;
         let newVersion : number = (previousVersion + 1);
         let fileDirectory = await recursive(directoryPath);
@@ -38,7 +39,7 @@ export class StorageBlockDirectory extends StorageBlock {
         }
         let response = await super.save(storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent });
         if(response.status) await this.setVersionFile(storageBlockName, newVersion);
-        if(clearDirectory) await this.dirRemove(storageBlockName);
+        if(clearDirectory) await this.removeDirectory(storageBlockName);
         return response;
     }
 
@@ -47,7 +48,7 @@ export class StorageBlockDirectory extends StorageBlock {
      * @param storageBlockName - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
-    public async dirLoad(storageBlockName: string, newLocation: string = null){
+    public async load(storageBlockName: string, newLocation: string = null){
         try {
             let fileDirectory = await super.load(storageBlockName);
             fileDirectory.data = JSON.parse(fileDirectory.data);
@@ -77,7 +78,7 @@ export class StorageBlockDirectory extends StorageBlock {
      * @param storageBlockName 
      * @returns 
      */
-    public async dirPath(storageBlockName: string){
+    public async getDirectoryPath(storageBlockName: string){
         try{
             return response.success(`The ${storageBlockName} path was return successfully.`, JSON.parse((await super.load(storageBlockName)).data).path);
         } catch {
@@ -91,7 +92,7 @@ export class StorageBlockDirectory extends StorageBlock {
      * @return New version
      */
     public async getVersionFile(storageBlockName : string){
-        let thisPath = (await this.dirPath(storageBlockName)).data;
+        let thisPath = (await this.getDirectoryPath(storageBlockName)).data;
         return await fs.existsSync(thisPath+"\\"+defaults.versionName) ? Number(await generic.fileLoad(thisPath+"\\"+defaults.versionName)) : 0;
     }
 
@@ -102,7 +103,7 @@ export class StorageBlockDirectory extends StorageBlock {
      * @return New version
      */
     public async setVersionFile(storageBlockName : string, version: number = null){
-        let thisPath = (await this.dirPath(storageBlockName)).data;
+        let thisPath = (await this.getDirectoryPath(storageBlockName)).data;
         let previousVersion : number  = 0;
         try{
             previousVersion = Number(await generic.fileLoad(thisPath+"\\"+defaults.versionName));
@@ -116,9 +117,9 @@ export class StorageBlockDirectory extends StorageBlock {
      * Removes a directory and all files inside that directory based on storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    public async dirRemove(storageBlockName:string){
+    public async removeDirectory(storageBlockName:string){
         try {
-            fs.rmdirSync((await this.dirPath(storageBlockName)).data, { recursive: true });
+            fs.rmdirSync((await this.getDirectoryPath(storageBlockName)).data, { recursive: true });
             return response.success("The storage block directory was deleted successfully.");
         } catch {
             return response.failed("The storage block directory failed to be deleted.");
@@ -129,9 +130,9 @@ export class StorageBlockDirectory extends StorageBlock {
      * Checks if a directory exists based on the provided storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    public async dirExists(storageBlockName: string){
+    public async checkDirectory(storageBlockName: string){
         try {
-            if(fs.existsSync((await this.dirPath(storageBlockName)).data)){
+            if(fs.existsSync((await this.getDirectoryPath(storageBlockName)).data)){
                 return response.success("The storage block folder exists.");
             } else {
                 return response.failed("The storage block folder does not exist.");

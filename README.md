@@ -128,25 +128,25 @@ persona.getProfile()
 persona.saveProfile()
 ```
 
-## Data Storage blocks
+## Module - Storage Blocks
 
 What are Perona data storage blocks? A chunk of data that can take any format and has been secured using AES 256 encryption. Each block contains a unique id that is referenced by the root file. Each block contains a randomly generated file id so it cannot be identified. The id is structured as radnomFilename|uniqueApplicationName|uniqueDataBlockName. Please make your unique application name very unique to avoid collissions with other applications. This reference will be stored in your persona.root file and can be referenced after intial login is performed. 
 
 
 ### **Save Data Storage Block**
-Saves a block of data to an existing block or creates a new block based on the application id & save sotrage id. Note: The unique id can caontain any character except **"|"** character. 
+Saves a block of data to an existing block or creates a new block based on the application id & save sotrage id.
 ```javascript
 persona.module.storageBlock.save("unique-id-string", "Whatever format or data you want to save.")
 ```
 
 ### **Load Data Storage Block**
-Loads a block of data from an existing block. Note: The unique id can contain any character except **"|"** character. 
+Loads a block of data from an existing block.
 ```javascript
 persona.module.storageBlock.load("unique-id-string");
 ```
 
 ### **Load Data Storage Blocks**
-Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding object property. If the property is not found, then it assigns the previous data. Note: The unique id can contain any character except **"|"** character. 
+Loads multiple storage blocks fluidly and assigns any storage block found to the corresponding object property. If the property is not found, then it assigns the previous data.
 ```javascript
 let dataObject = { 
     block1: { prop1: "...", prop2: "..." },
@@ -157,33 +157,42 @@ persona.module.storageBlock.loadAll(dataObject);
 ```
 
 ### **Delete Data Storage Block**
-Deletes a storage block. Note: The unique id can contain any character except **"|"** character.
+Deletes a storage block.
 ```javascript
 persona.module.storageBlock.delete("unique-id-string");
 ```
 
+### **Delete Data Storage Block**
+Gets all the storage block that are defined inside the current Persona.
+```javascript
+persona.module.storageBlock.getList();
+```
+
+
+## Module - Storage blocks Directory
+
 ### **Save a directory to a Data Storage Block**
 Saves a directory to a data storage block. This allows you to protect entire folders. Use the last argument tells this function whether to clear this directory after it is saved. The third argument is optional.
 ```javascript
-persona.module.storageBlockDirectory.dirSave("directory/path", "unique-id-string", true);
+persona.module.storageBlockDirectory.save("directory/path", "unique-id-string", true);
 ```
 
 ### **Load a directory from a Data Storage Block**
 Creates a directory from loading a data storage block. This allows you to protect entire folders.
 ```javascript
-persona.module.storageBlockDirectory.dirLoad("unique-id-string");
+persona.module.storageBlockDirectory.load("unique-id-string");
 ```
 
-### **Clears a directory off your computer**
+### **Removes a directory**
 Removes a directory and all files inside that directory based on storage block name.
 ```javascript
-persona.module.storageBlockDirectory.dirRemove("unique-id-string");
+persona.module.storageBlockDirectory.removeDirectory("unique-id-string");
 ```
 
 ### **Checks if a directory exists**
 Checks if a directory exists only using the current storage block name.
 ```javascript
-persona.module.storageBlockDirectory.dirExists("unique-id-string");
+persona.module.storageBlockDirectory.checkDirectory("unique-id-string");
 ```
 
 ### **Set the version number of a directory**

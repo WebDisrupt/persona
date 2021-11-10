@@ -1,39 +1,27 @@
 
-import { generic } from '../helpers/generic';
-import { cypher } from '../helpers/cypher';
 import { defaults } from '../config';
 import { response } from '../helpers/response';
-import { personaRoot } from '../models/persona-root';
 import { moduleOptions } from '../models/module';
+import { BaseStorageBlock } from '../core/storage-block-core';
 var fs = require("fs");
 
-export class StorageBlock {
-
-    private path: string = null;
-    private appName: string = null;
-    private personaId: string = null;
-    private key: string = null;
-
+export class StorageBlock extends BaseStorageBlock {
 
     /**
      * Constructor - Used to assign personaOptions.
      * @param options 
      */
     public constructor(options:moduleOptions = null){
-        this.path = options.path;
-        this.appName = options.appName;
-        this.personaId = options.personaId;
-        this.key = options.key;
+        super(options);
     }
-
 
     /**
      * Check if storage block exists
      * @param storageBlockId The id property is required to identify the blocks purpose and if it already exists. Cannot contain '|' chaacter.
      * @returns {boolean}
      */
-        public exists(storageBlockId : string) : boolean{
-        return fs.existsSync(`${this.path}\\${this.personaId}\\${this.appName}.${storageBlockId}${defaults.blockExt}`) ? true : false;
+    public exists(storageBlockId : string) : boolean{
+        return super.exists(storageBlockId);
     }
 
     /**
@@ -42,14 +30,7 @@ export class StorageBlock {
      * @returns 
      */
     public async load(storageBlockId : string){
-        let filename = `${this.appName}.${storageBlockId}${defaults.blockExt}`;
-        if(this.exists(storageBlockId)){
-            return await generic.fileLoad(`${this.path}\\${this.personaId}\\${filename}`).then( async (content : any) => {
-                return response.success(`Data storage block ${storageBlockId} was loaded successfully.`, cypher.decrypt(content.toString(), this.key));
-            });
-        } else {
-            return response.failed(`Data storage block ${storageBlockId} doesn't exist.`, `${this.path}\\${this.personaId}\\${filename}`);
-        }
+        return super.load(storageBlockId);
     }
         
     /**
@@ -87,77 +68,15 @@ export class StorageBlock {
      * @returns 
      */
     public async save(storageBlockId: string, content:any){
-        if(typeof content !== "string") content = JSON.stringify(content);
-        let filename = `${this.appName}.${storageBlockId}${defaults.blockExt}`;
-        if(this.personaId === null) return response.failed("No profile loaded.");
-        if(storageBlockId === undefined || storageBlockId === null) return response.failed("No storage id provided.");
-        let newRes = this.exists(storageBlockId) ? await this.update(filename, content) : await this.create(filename, content);
-        if(newRes.status === true){
-            return response.success(`Data storage block ${filename} was saved successfully.`);
-        } else {
-            return newRes;
-        }
+        return super.save(storageBlockId, content);
     }
 
-    /**
-     * Creates a new storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private async create(filename: string, content:string){ 
-        try {
-            let personaLocation = `${this.path}\\${this.personaId}`;
-            await generic.fileUpdate(personaLocation, `${filename}`, cypher.encrypt(content, this.key));
-            return response.success(`Data storage block successfully created.`);
-        } catch (err) {
-            return response.failed(`Data storage block ${filename} failed to create successfully.`);
-        }
-    }
-
-    /**
-     * Updates an existing Storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private async update(filename: string, content:string){
-        try {
-            await generic.fileUpdate(`${this.path}\\${this.personaId}`, `${filename}`, cypher.encrypt(content, this.key));
-            return response.success(`Data storage block ${filename} successfully updated.`);
-        } catch (err) {
-            return response.failed(`Data storage block ${filename} failed to update successfully.`);
-        }
-    }
-    
     /**
      * Delete a storage block
      * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.
      */
     public async delete(storageBlockId : string = null) {
-        let filename = `${this.appName}.${storageBlockId}${defaults.blockExt}`;
-        if(this.personaId !== null){
-            if(storageBlockId === null){
-                let files : Array<string> = await fs.promises.readdir(this.path+"\\"+this.personaId);
-                try{
-                    files.forEach( file => {
-                        if(file !== `${defaults.root}`){
-                            fs.unlinkSync(this.path+"\\"+this.personaId+"\\"+file);
-                        }
-                    });
-                    return response.success(`Successfully deleted all storage blocks.`);
-                } catch {
-                    return response.failed(`Could not find any storage blocks to delete.`);
-                }
-            } else {
-                try {
-                    fs.unlinkSync(this.path+"\\"+this.personaId+"\\"+filename);
-                    return response.success(`Successfully deleted data storage block.[${filename}]`);
-            } catch (err) {
-                    return response.failed(`Failed to find the data storage block.[${filename}]`);
-                }
-            }
-        } else {
-            return response.failed(`Failed to delete data storage block(s) because no Persona was found.`);
-        }
+        return super.delete(storageBlockId);
     }
 
     /**

@@ -1,4 +1,19 @@
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -37,26 +52,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 exports.StorageBlock = void 0;
-var generic_1 = require("../helpers/generic");
-var cypher_1 = require("../helpers/cypher");
 var config_1 = require("../config");
 var response_1 = require("../helpers/response");
+var storage_block_core_1 = require("../core/storage-block-core");
 var fs = require("fs");
-var StorageBlock = /** @class */ (function () {
+var StorageBlock = /** @class */ (function (_super) {
+    __extends(StorageBlock, _super);
     /**
      * Constructor - Used to assign personaOptions.
      * @param options
      */
     function StorageBlock(options) {
         if (options === void 0) { options = null; }
-        this.path = null;
-        this.appName = null;
-        this.personaId = null;
-        this.key = null;
-        this.path = options.path;
-        this.appName = options.appName;
-        this.personaId = options.personaId;
-        this.key = options.key;
+        return _super.call(this, options) || this;
     }
     /**
      * Check if storage block exists
@@ -64,7 +72,7 @@ var StorageBlock = /** @class */ (function () {
      * @returns {boolean}
      */
     StorageBlock.prototype.exists = function (storageBlockId) {
-        return fs.existsSync(this.path + "\\" + this.personaId + "\\" + this.appName + "." + storageBlockId + config_1.defaults.blockExt) ? true : false;
+        return _super.prototype.exists.call(this, storageBlockId);
     };
     /**
      * Loads a block of data form an existing block.
@@ -73,21 +81,8 @@ var StorageBlock = /** @class */ (function () {
      */
     StorageBlock.prototype.load = function (storageBlockId) {
         return __awaiter(this, void 0, void 0, function () {
-            var filename;
-            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
-                        if (!this.exists(storageBlockId)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, generic_1.generic.fileLoad(this.path + "\\" + this.personaId + "\\" + filename).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    return [2 /*return*/, response_1.response.success("Data storage block " + storageBlockId + " was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.key))];
-                                });
-                            }); })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                    case 2: return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " doesn't exist.", this.path + "\\" + this.personaId + "\\" + filename)];
-                }
+                return [2 /*return*/, _super.prototype.load.call(this, storageBlockId)];
             });
         });
     };
@@ -152,85 +147,8 @@ var StorageBlock = /** @class */ (function () {
      */
     StorageBlock.prototype.save = function (storageBlockId, content) {
         return __awaiter(this, void 0, void 0, function () {
-            var filename, newRes, _a;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if (typeof content !== "string")
-                            content = JSON.stringify(content);
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
-                        if (this.personaId === null)
-                            return [2 /*return*/, response_1.response.failed("No profile loaded.")];
-                        if (storageBlockId === undefined || storageBlockId === null)
-                            return [2 /*return*/, response_1.response.failed("No storage id provided.")];
-                        if (!this.exists(storageBlockId)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.update(filename, content)];
-                    case 1:
-                        _a = _b.sent();
-                        return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.create(filename, content)];
-                    case 3:
-                        _a = _b.sent();
-                        _b.label = 4;
-                    case 4:
-                        newRes = _a;
-                        if (newRes.status === true) {
-                            return [2 /*return*/, response_1.response.success("Data storage block " + filename + " was saved successfully.")];
-                        }
-                        else {
-                            return [2 /*return*/, newRes];
-                        }
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    /**
-     * Creates a new storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    StorageBlock.prototype.create = function (filename, content) {
-        return __awaiter(this, void 0, void 0, function () {
-            var personaLocation, err_2;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        personaLocation = this.path + "\\" + this.personaId;
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(personaLocation, "" + filename, cypher_1.cypher.encrypt(content, this.key))];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, response_1.response.success("Data storage block successfully created.")];
-                    case 2:
-                        err_2 = _a.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + filename + " failed to create successfully.")];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    /**
-     * Updates an existing Storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    StorageBlock.prototype.update = function (filename, content) {
-        return __awaiter(this, void 0, void 0, function () {
-            var err_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(this.path + "\\" + this.personaId, "" + filename, cypher_1.cypher.encrypt(content, this.key))];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, response_1.response.success("Data storage block " + filename + " successfully updated.")];
-                    case 2:
-                        err_3 = _a.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + filename + " failed to update successfully.")];
-                    case 3: return [2 /*return*/];
-                }
+                return [2 /*return*/, _super.prototype.save.call(this, storageBlockId, content)];
             });
         });
     };
@@ -241,42 +159,8 @@ var StorageBlock = /** @class */ (function () {
     StorageBlock.prototype["delete"] = function (storageBlockId) {
         if (storageBlockId === void 0) { storageBlockId = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var filename, files;
-            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
-                        if (!(this.personaId !== null)) return [3 /*break*/, 4];
-                        if (!(storageBlockId === null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, fs.promises.readdir(this.path + "\\" + this.personaId)];
-                    case 1:
-                        files = _a.sent();
-                        try {
-                            files.forEach(function (file) {
-                                if (file !== "" + config_1.defaults.root) {
-                                    fs.unlinkSync(_this.path + "\\" + _this.personaId + "\\" + file);
-                                }
-                            });
-                            return [2 /*return*/, response_1.response.success("Successfully deleted all storage blocks.")];
-                        }
-                        catch (_b) {
-                            return [2 /*return*/, response_1.response.failed("Could not find any storage blocks to delete.")];
-                        }
-                        return [3 /*break*/, 3];
-                    case 2:
-                        try {
-                            fs.unlinkSync(this.path + "\\" + this.personaId + "\\" + filename);
-                            return [2 /*return*/, response_1.response.success("Successfully deleted data storage block.[" + filename + "]")];
-                        }
-                        catch (err) {
-                            return [2 /*return*/, response_1.response.failed("Failed to find the data storage block.[" + filename + "]")];
-                        }
-                        _a.label = 3;
-                    case 3: return [3 /*break*/, 5];
-                    case 4: return [2 /*return*/, response_1.response.failed("Failed to delete data storage block(s) because no Persona was found.")];
-                    case 5: return [2 /*return*/];
-                }
+                return [2 /*return*/, _super.prototype["delete"].call(this, storageBlockId)];
             });
         });
     };
@@ -314,6 +198,6 @@ var StorageBlock = /** @class */ (function () {
         });
     };
     return StorageBlock;
-}());
+}(storage_block_core_1.BaseStorageBlock));
 exports.StorageBlock = StorageBlock;
 //# sourceMappingURL=storage-block.js.map

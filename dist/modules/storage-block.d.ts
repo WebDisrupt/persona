@@ -1,9 +1,6 @@
 import { moduleOptions } from '../models/module';
-export declare class StorageBlock {
-    private path;
-    private appName;
-    private personaId;
-    private key;
+import { BaseStorageBlock } from '../core/storage-block-core';
+export declare class StorageBlock extends BaseStorageBlock {
     /**
      * Constructor - Used to assign personaOptions.
      * @param options
@@ -34,18 +31,6 @@ export declare class StorageBlock {
      * @returns
      */
     save(storageBlockId: string, content: any): Promise<import("../models/response").Response>;
-    /**
-     * Creates a new storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private create;
-    /**
-     * Updates an existing Storage block
-     * @param id - contains a | seperated string. Example: filename|app_id|block_ref_id
-     * @param content - contains a string of important data that is saved
-     */
-    private update;
     /**
      * Delete a storage block
      * @param storageBlockId (optional) - Define to delete an individual storage block or leave empty to delete all storage blocks. Cannot contain '|' chaacter.

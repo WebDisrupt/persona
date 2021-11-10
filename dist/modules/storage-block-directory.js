@@ -55,7 +55,7 @@ exports.StorageBlockDirectory = void 0;
 var generic_1 = require("../helpers/generic");
 var config_1 = require("../config");
 var response_1 = require("../helpers/response");
-var storage_block_1 = require("../modules/storage-block");
+var storage_block_core_1 = require("../core/storage-block-core");
 var recursive = require("recursive-readdir");
 var fs = require("fs");
 var StorageBlockDirectory = /** @class */ (function (_super) {
@@ -73,7 +73,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * @param directoryPath - Directory you would like to save
      * @param storageBlockName
      */
-    StorageBlockDirectory.prototype.dirSave = function (directoryPath, storageBlockName, clearDirectory) {
+    StorageBlockDirectory.prototype.save = function (directoryPath, storageBlockName, clearDirectory) {
         var _a;
         if (clearDirectory === void 0) { clearDirectory = false; }
         return __awaiter(this, void 0, void 0, function () {
@@ -119,7 +119,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         _f.label = 11;
                     case 11:
                         if (!clearDirectory) return [3 /*break*/, 13];
-                        return [4 /*yield*/, this.dirRemove(storageBlockName)];
+                        return [4 /*yield*/, this.removeDirectory(storageBlockName)];
                     case 12:
                         _f.sent();
                         _f.label = 13;
@@ -133,7 +133,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * @param storageBlockName - Storage block that
      * @param newLocation - (optional) Used for moving files to a new location.
      */
-    StorageBlockDirectory.prototype.dirLoad = function (storageBlockName, newLocation) {
+    StorageBlockDirectory.prototype.load = function (storageBlockName, newLocation) {
         if (newLocation === void 0) { newLocation = null; }
         return __awaiter(this, void 0, void 0, function () {
             var fileDirectory, files, thisPath, _a, index, _b;
@@ -184,7 +184,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * @param storageBlockName
      * @returns
      */
-    StorageBlockDirectory.prototype.dirPath = function (storageBlockName) {
+    StorageBlockDirectory.prototype.getDirectoryPath = function (storageBlockName) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b, _c, _d, _e, _f;
             return __generator(this, function (_g) {
@@ -214,7 +214,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
             var thisPath, _a, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.dirPath(storageBlockName)];
+                    case 0: return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         thisPath = (_c.sent()).data;
                         return [4 /*yield*/, fs.existsSync(thisPath + "\\" + config_1.defaults.versionName)];
@@ -245,7 +245,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
             var thisPath, previousVersion, _a, _b, newVersion;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.dirPath(storageBlockName)];
+                    case 0: return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         thisPath = (_c.sent()).data;
                         previousVersion = 0;
@@ -274,7 +274,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * Removes a directory and all files inside that directory based on storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    StorageBlockDirectory.prototype.dirRemove = function (storageBlockName) {
+    StorageBlockDirectory.prototype.removeDirectory = function (storageBlockName) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b, _c;
             return __generator(this, function (_d) {
@@ -282,7 +282,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 0:
                         _d.trys.push([0, 2, , 3]);
                         _b = (_a = fs).rmdirSync;
-                        return [4 /*yield*/, this.dirPath(storageBlockName)];
+                        return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         _b.apply(_a, [(_d.sent()).data, { recursive: true }]);
                         return [2 /*return*/, response_1.response.success("The storage block directory was deleted successfully.")];
@@ -298,7 +298,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * Checks if a directory exists based on the provided storage block name.
      * @param storageBlockName - Name of the storage block
      */
-    StorageBlockDirectory.prototype.dirExists = function (storageBlockName) {
+    StorageBlockDirectory.prototype.checkDirectory = function (storageBlockName) {
         return __awaiter(this, void 0, void 0, function () {
             var _a, _b, _c;
             return __generator(this, function (_d) {
@@ -306,7 +306,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 0:
                         _d.trys.push([0, 2, , 3]);
                         _b = (_a = fs).existsSync;
-                        return [4 /*yield*/, this.dirPath(storageBlockName)];
+                        return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         if (_b.apply(_a, [(_d.sent()).data])) {
                             return [2 /*return*/, response_1.response.success("The storage block folder exists.")];
@@ -324,6 +324,6 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
         });
     };
     return StorageBlockDirectory;
-}(storage_block_1.StorageBlock));
+}(storage_block_core_1.BaseStorageBlock));
 exports.StorageBlockDirectory = StorageBlockDirectory;
 //# sourceMappingURL=storage-block-directory.js.map
