@@ -363,7 +363,7 @@ var persona = /** @class */ (function () {
                         _b.label = 2;
                     case 2:
                         _b.trys.push([2, 5, , 6]);
-                        return [4 /*yield*/, fs.rmdirSync(this.path + "\\" + id, { recursive: true })];
+                        return [4 /*yield*/, fs.rmSync(this.path + "\\" + id, { recursive: true })];
                     case 3:
                         _b.sent();
                         return [4 /*yield*/, this.unload()];

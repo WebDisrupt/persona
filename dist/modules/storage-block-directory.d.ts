@@ -1,6 +1,7 @@
 import { moduleOptions } from '../models/module';
 import { BaseStorageBlock } from '../core/storage-block-core';
 export declare class StorageBlockDirectory extends BaseStorageBlock {
+    progressTracker: Array<any>;
     /**
      * Constructor - Used to assign personaOptions.
      * @param options
@@ -14,10 +15,21 @@ export declare class StorageBlockDirectory extends BaseStorageBlock {
     save(directoryPath: string, storageBlockName: string, clearDirectory?: boolean): Promise<import("../models/response").Response>;
     /**
      * Create a new directory baed on a storage block
-     * @param storageBlockName - Storage block that
+     * @param storageBlockName - Unique Storage block
      * @param newLocation - (optional) Used for moving files to a new location.
      */
     load(storageBlockName: string, newLocation?: string): Promise<import("../models/response").Response>;
+    /**
+     * Sets the directory loading progress based on storage block name.
+     * @param storageBlockName - Unique Storage block
+     */
+    setProgress(storageBlockName: string, progress?: number): void;
+    /**
+     * Gets current loading progress based on the provided storage block name.
+     * @param storageBlockName - Unique Storage block
+     * @returns percentage out of 100 that the directory has been loaded
+     */
+    getProgress(storageBlockName: string): any;
     /**
      * Get storage block path based on storage block id
      * @param storageBlockName

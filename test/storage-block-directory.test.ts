@@ -20,9 +20,9 @@ const mockedFileAddtion = "test.cache";
 var fs = require("fs");
 
 var clearAllDirectories = function(){
-    if(fs.existsSync(path)) fs.rmdirSync(path, { recursive: true }); 
-    if(fs.existsSync(path2)) fs.rmdirSync(path2, { recursive: true });
-    if(fs.existsSync(mockedDirectory)) fs.rmdirSync(mockedDirectory, { recursive: true }); // Remove left over data
+    if(fs.existsSync(path)) fs.rmSync(path, { recursive: true }); 
+    if(fs.existsSync(path2)) fs.rmSync(path2, { recursive: true });
+    if(fs.existsSync(mockedDirectory)) fs.rmSync(mockedDirectory, { recursive: true }); // Remove left over data
 }
 
 clearAllDirectories();
@@ -71,6 +71,15 @@ describe('Storage Block Directory Module', () => {
     test("Load a storage block", async ()=>{ 
         expect((await storageBlockDirectory.load(dirStorageBlock)).status).toBe(true);
         expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(true);
+    });
+
+    test("Check that loading and progress is working", async ()=>{ 
+        storageBlockDirectory.setProgress(dirStorageBlock);
+        expect(storageBlockDirectory.getProgress(dirStorageBlock)).toBe(0);
+        storageBlockDirectory.setProgress(dirStorageBlock, Math.round((3 / 7) * 100));
+        expect(storageBlockDirectory.getProgress(dirStorageBlock)).toBe(43);
+        storageBlockDirectory.setProgress(dirStorageBlock, 100);
+        expect(storageBlockDirectory.getProgress(dirStorageBlock)).toBe(100);
     });
 
 });

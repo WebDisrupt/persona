@@ -5,7 +5,7 @@ const username = "john@doe.com";
 const password = "123456";
 const path = "C:\\personas-test";
 
-fs.rmdirSync(path, { recursive: true }); // Remove left over data
+if(fs.existsSync(path)) fs.rmSync(path, { recursive: true }); // Remove left over data
 let personaInstance = new persona({ appName: "default-app", path: path}); // Create new folder and system data
 
 describe('Basic Persona Actions - Phased 1', () => {
@@ -176,7 +176,7 @@ describe('New Persona lifecycle for each test.', () => {
 
 // Unload - Removes directory to test creating a new one on next run
 afterAll(() => {
-    return fs.rmdirSync(path, { recursive: true });
+    return fs.rmSync(path, { recursive: true });
 });
 
 

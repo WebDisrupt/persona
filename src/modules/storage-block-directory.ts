@@ -13,6 +13,8 @@ var fs = require("fs");
 
 export class StorageBlockDirectory extends BaseStorageBlock {
 
+    public progressTracker : Array<any> = [];
+
     /**
      * Constructor - Used to assign personaOptions.
      * @param options 
@@ -29,14 +31,17 @@ export class StorageBlockDirectory extends BaseStorageBlock {
     public async save(directoryPath: string, storageBlockName:string, clearDirectory : boolean = false){
         let previousVersion : number = (await this.load(storageBlockName)).data?.version || 0;
         let newVersion : number = (previousVersion + 1);
+        this.setProgress(storageBlockName);
         let fileDirectory = await recursive(directoryPath);
         let directoryContent = [];
         for (let index = 0; index < fileDirectory.length; index++) {
+            this.setProgress(storageBlockName, Math.round((index / fileDirectory.length) * 100));
             try{
                 let name = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
                 directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : (await generic.fileLoad(fileDirectory[index])).toString() });      
             } catch { } // Fail silently on bad files
         }
+        this.setProgress(storageBlockName, 100);
         let response = await super.save(storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent });
         if(response.status) await this.setVersionFile(storageBlockName, newVersion);
         if(clearDirectory) await this.removeDirectory(storageBlockName);
@@ -45,11 +50,12 @@ export class StorageBlockDirectory extends BaseStorageBlock {
 
     /**
      * Create a new directory baed on a storage block
-     * @param storageBlockName - Storage block that
+     * @param storageBlockName - Unique Storage block
      * @param newLocation - (optional) Used for moving files to a new location.
      */
     public async load(storageBlockName: string, newLocation: string = null){
         try {
+            this.setProgress(storageBlockName);
             let fileDirectory = await super.load(storageBlockName);
             fileDirectory.data = JSON.parse(fileDirectory.data);
             let files = fileDirectory.data.files;
@@ -58,8 +64,10 @@ export class StorageBlockDirectory extends BaseStorageBlock {
             if(fileDirectory.status){
                 if(Number(fileDirectory.data.version) > await this.getVersionFile(storageBlockName)){
                     for (let index = 0; index < files.length; index++) {
+                        this.setProgress(storageBlockName, Math.round((index / files.length) * 100));
                         await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content);
                     }
+                    this.setProgress(storageBlockName, 100);
                     await this.setVersionFile(storageBlockName, Number(fileDirectory.data.version));
                     return response.success(`Directory ${thisPath} successfully loaded from storage block.`);
                 } else {
@@ -71,6 +79,28 @@ export class StorageBlockDirectory extends BaseStorageBlock {
         } catch {
             return response.failed(`Data storage block ${storageBlockName} failed to load.`);
         }
+    }
+
+    /**
+     * Sets the directory loading progress based on storage block name.
+     * @param storageBlockName - Unique Storage block 
+     */
+    public setProgress(storageBlockName: string, progress: number = 0){
+        let currentIndex = this.progressTracker.findIndex( elem => elem.name === storageBlockName );
+        if(currentIndex === -1){
+            this.progressTracker.push({ name: storageBlockName, progress: progress });
+        } else {
+            this.progressTracker[currentIndex].progress = progress;
+        } 
+    }
+
+    /**
+     * Gets current loading progress based on the provided storage block name.
+     * @param storageBlockName - Unique Storage block 
+     * @returns percentage out of 100 that the directory has been loaded
+     */
+    public getProgress(storageBlockName: string){
+        return this.progressTracker[this.progressTracker.findIndex( elem => elem.name === storageBlockName )].progress
     }
 
     /**
@@ -119,7 +149,7 @@ export class StorageBlockDirectory extends BaseStorageBlock {
      */
     public async removeDirectory(storageBlockName:string){
         try {
-            fs.rmdirSync((await this.getDirectoryPath(storageBlockName)).data, { recursive: true });
+            fs.rmSync((await this.getDirectoryPath(storageBlockName)).data, { recursive: true });
             return response.success("The storage block directory was deleted successfully.");
         } catch {
             return response.failed("The storage block directory failed to be deleted.");

@@ -252,7 +252,7 @@ export class persona {
         let id = await this.find(username, password);
         if(id !== null){
             try{
-                await fs.rmdirSync(this.path+"\\"+id, { recursive: true });
+                await fs.rmSync(this.path+"\\"+id, { recursive: true });
                 await this.unload();
                 return response.success(`${username}'s Persona has been deleted.`);
             } catch {

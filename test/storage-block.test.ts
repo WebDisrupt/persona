@@ -15,7 +15,7 @@ let blockName = "example-data-block";
 let blockName2 = "example-data-block-2";
 let thisContent = { "data" : "The text you want to save" };
 var fs = require("fs");
-fs.rmdirSync(path, { recursive: true }); // Remove left over data
+if(fs.existsSync(path)) fs.rmSync(path, { recursive: true }); // Remove left over data
 
 describe('Storage Block Module', () => {
     test("Save a <string> to a single data storage block.", async ()=>{
@@ -35,5 +35,5 @@ describe('Storage Block Module', () => {
 
 // Unload - Removes directory to test creating a new one on next run
 afterAll(() => {
-    return fs.rmdirSync(path, { recursive: true });
+    return fs.rmSync(path, { recursive: true });
 });

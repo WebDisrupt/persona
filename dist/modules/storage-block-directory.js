@@ -66,7 +66,9 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      */
     function StorageBlockDirectory(options) {
         if (options === void 0) { options = null; }
-        return _super.call(this, options) || this;
+        var _this = _super.call(this, options) || this;
+        _this.progressTracker = [];
+        return _this;
     }
     /**
      * Save the entire file structure inside a directory to a storage block. Does not save empty directories
@@ -85,6 +87,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 1:
                         previousVersion = ((_a = (_f.sent()).data) === null || _a === void 0 ? void 0 : _a.version) || 0;
                         newVersion = (previousVersion + 1);
+                        this.setProgress(storageBlockName);
                         return [4 /*yield*/, recursive(directoryPath)];
                     case 2:
                         fileDirectory = _f.sent();
@@ -93,6 +96,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         _f.label = 3;
                     case 3:
                         if (!(index < fileDirectory.length)) return [3 /*break*/, 8];
+                        this.setProgress(storageBlockName, Math.round((index / fileDirectory.length) * 100));
                         _f.label = 4;
                     case 4:
                         _f.trys.push([4, 6, , 7]);
@@ -109,7 +113,9 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 7:
                         index++;
                         return [3 /*break*/, 3];
-                    case 8: return [4 /*yield*/, _super.prototype.save.call(this, storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent })];
+                    case 8:
+                        this.setProgress(storageBlockName, 100);
+                        return [4 /*yield*/, _super.prototype.save.call(this, storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent })];
                     case 9:
                         response = _f.sent();
                         if (!response.status) return [3 /*break*/, 11];
@@ -130,7 +136,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
     };
     /**
      * Create a new directory baed on a storage block
-     * @param storageBlockName - Storage block that
+     * @param storageBlockName - Unique Storage block
      * @param newLocation - (optional) Used for moving files to a new location.
      */
     StorageBlockDirectory.prototype.load = function (storageBlockName, newLocation) {
@@ -141,6 +147,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                 switch (_c.label) {
                     case 0:
                         _c.trys.push([0, 12, , 13]);
+                        this.setProgress(storageBlockName);
                         return [4 /*yield*/, _super.prototype.load.call(this, storageBlockName)];
                     case 1:
                         fileDirectory = _c.sent();
@@ -156,6 +163,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         _c.label = 3;
                     case 3:
                         if (!(index < files.length)) return [3 /*break*/, 6];
+                        this.setProgress(storageBlockName, Math.round((index / files.length) * 100));
                         return [4 /*yield*/, generic_1.generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content)];
                     case 4:
                         _c.sent();
@@ -163,7 +171,9 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 5:
                         index++;
                         return [3 /*break*/, 3];
-                    case 6: return [4 /*yield*/, this.setVersionFile(storageBlockName, Number(fileDirectory.data.version))];
+                    case 6:
+                        this.setProgress(storageBlockName, 100);
+                        return [4 /*yield*/, this.setVersionFile(storageBlockName, Number(fileDirectory.data.version))];
                     case 7:
                         _c.sent();
                         return [2 /*return*/, response_1.response.success("Directory " + thisPath + " successfully loaded from storage block.")];
@@ -178,6 +188,28 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                 }
             });
         });
+    };
+    /**
+     * Sets the directory loading progress based on storage block name.
+     * @param storageBlockName - Unique Storage block
+     */
+    StorageBlockDirectory.prototype.setProgress = function (storageBlockName, progress) {
+        if (progress === void 0) { progress = 0; }
+        var currentIndex = this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; });
+        if (currentIndex === -1) {
+            this.progressTracker.push({ name: storageBlockName, progress: progress });
+        }
+        else {
+            this.progressTracker[currentIndex].progress = progress;
+        }
+    };
+    /**
+     * Gets current loading progress based on the provided storage block name.
+     * @param storageBlockName - Unique Storage block
+     * @returns percentage out of 100 that the directory has been loaded
+     */
+    StorageBlockDirectory.prototype.getProgress = function (storageBlockName) {
+        return this.progressTracker[this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; })].progress;
     };
     /**
      * Get storage block path based on storage block id
@@ -281,7 +313,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                 switch (_d.label) {
                     case 0:
                         _d.trys.push([0, 2, , 3]);
-                        _b = (_a = fs).rmdirSync;
+                        _b = (_a = fs).rmSync;
                         return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         _b.apply(_a, [(_d.sent()).data, { recursive: true }]);

@@ -1,6 +1,6 @@
 
 
-# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-91.89%25-green)
+# Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-92.86%25-green)
 Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
 
 This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
@@ -181,6 +181,12 @@ persona.module.storageBlockDirectory.save("directory/path", "unique-id-string", 
 Creates a directory from loading a data storage block. This allows you to protect entire folders.
 ```javascript
 persona.module.storageBlockDirectory.load("unique-id-string");
+```
+
+### **This will be updated as directory is being loaded or saved**
+Gets current load/save progress based on the provided storage block name.
+```javascript
+persona.module.storageBlockDirectory.getProgress("unique-id-string");
 ```
 
 ### **Removes a directory**
