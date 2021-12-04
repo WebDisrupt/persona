@@ -79,36 +79,42 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
         var _a;
         if (clearDirectory === void 0) { clearDirectory = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var previousVersion, newVersion, fileDirectory, directoryContent, index, name_1, _b, _c, _d, response;
-            var _e;
-            return __generator(this, function (_f) {
-                switch (_f.label) {
+            var previousVersion, newVersion, fileDirectory, directoryContent, percentageTotal, percentagePart, index, name_1, content, _b, response;
+            var _this = this;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0: return [4 /*yield*/, this.load(storageBlockName)];
                     case 1:
-                        previousVersion = ((_a = (_f.sent()).data) === null || _a === void 0 ? void 0 : _a.version) || 0;
+                        previousVersion = ((_a = (_c.sent()).data) === null || _a === void 0 ? void 0 : _a.version) || 0;
                         newVersion = (previousVersion + 1);
                         this.setProgress(storageBlockName);
                         return [4 /*yield*/, recursive(directoryPath)];
                     case 2:
-                        fileDirectory = _f.sent();
+                        fileDirectory = _c.sent();
                         directoryContent = [];
+                        percentageTotal = 0;
+                        percentagePart = (100 / fileDirectory.length);
                         index = 0;
-                        _f.label = 3;
+                        _c.label = 3;
                     case 3:
                         if (!(index < fileDirectory.length)) return [3 /*break*/, 8];
-                        this.setProgress(storageBlockName, Math.round((index / fileDirectory.length) * 100));
-                        _f.label = 4;
+                        _c.label = 4;
                     case 4:
-                        _f.trys.push([4, 6, , 7]);
+                        _c.trys.push([4, 6, , 7]);
                         name_1 = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
-                        _c = (_b = directoryContent).push;
-                        _e = { path: fileDirectory[index].replace(name_1, ''), name: name_1.substr(("\\").length) };
-                        return [4 /*yield*/, generic_1.generic.fileLoad(fileDirectory[index])];
+                        return [4 /*yield*/, generic_1.generic.fileLoad(fileDirectory[index]).then(function (contents) {
+                                percentageTotal += percentagePart;
+                                _this.setProgress(storageBlockName, Math.round(percentageTotal));
+                                return contents;
+                            })];
                     case 5:
-                        _c.apply(_b, [(_e.content = (_f.sent()).toString(), _e)]);
+                        content = _c.sent();
+                        directoryContent.push({ path: fileDirectory[index].replace(name_1, ''), name: name_1.substr(("\\").length), content: content.toString() });
                         return [3 /*break*/, 7];
                     case 6:
-                        _d = _f.sent();
+                        _b = _c.sent();
+                        percentageTotal += percentagePart;
+                        this.setProgress(storageBlockName, Math.round(percentageTotal));
                         return [3 /*break*/, 7];
                     case 7:
                         index++;
@@ -117,18 +123,18 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         this.setProgress(storageBlockName, 100);
                         return [4 /*yield*/, _super.prototype.save.call(this, storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent })];
                     case 9:
-                        response = _f.sent();
+                        response = _c.sent();
                         if (!response.status) return [3 /*break*/, 11];
                         return [4 /*yield*/, this.setVersionFile(storageBlockName, newVersion)];
                     case 10:
-                        _f.sent();
-                        _f.label = 11;
+                        _c.sent();
+                        _c.label = 11;
                     case 11:
                         if (!clearDirectory) return [3 /*break*/, 13];
                         return [4 /*yield*/, this.removeDirectory(storageBlockName)];
                     case 12:
-                        _f.sent();
-                        _f.label = 13;
+                        _c.sent();
+                        _c.label = 13;
                     case 13: return [2 /*return*/, response];
                 }
             });
@@ -142,7 +148,8 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
     StorageBlockDirectory.prototype.load = function (storageBlockName, newLocation) {
         if (newLocation === void 0) { newLocation = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var fileDirectory, files, thisPath, _a, index, _b;
+            var fileDirectory, files, thisPath, _a, percentageTotal_1, percentagePart_1, index, _b;
+            var _this = this;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -159,12 +166,16 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         return [4 /*yield*/, this.getVersionFile(storageBlockName)];
                     case 2:
                         if (!(_a > (_c.sent()))) return [3 /*break*/, 8];
+                        percentageTotal_1 = 0;
+                        percentagePart_1 = (100 / files.length);
                         index = 0;
                         _c.label = 3;
                     case 3:
                         if (!(index < files.length)) return [3 /*break*/, 6];
-                        this.setProgress(storageBlockName, Math.round((index / files.length) * 100));
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content)];
+                        return [4 /*yield*/, generic_1.generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(function () {
+                                percentageTotal_1 += percentagePart_1;
+                                _this.setProgress(storageBlockName, Math.round(percentageTotal_1));
+                            })];
                     case 4:
                         _c.sent();
                         _c.label = 5;

@@ -34,12 +34,21 @@ export class StorageBlockDirectory extends BaseStorageBlock {
         this.setProgress(storageBlockName);
         let fileDirectory = await recursive(directoryPath);
         let directoryContent = [];
+        let percentageTotal = 0;
+        let percentagePart = (100/fileDirectory.length);
         for (let index = 0; index < fileDirectory.length; index++) {
-            this.setProgress(storageBlockName, Math.round((index / fileDirectory.length) * 100));
             try{
                 let name = fileDirectory[index].substr(fileDirectory[index].lastIndexOf("\\"));
-                directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : (await generic.fileLoad(fileDirectory[index])).toString() });      
-            } catch { } // Fail silently on bad files
+                let content = await generic.fileLoad(fileDirectory[index]).then((contents)=>{
+                    percentageTotal += percentagePart;
+                    this.setProgress(storageBlockName, Math.round(percentageTotal));
+                    return contents;
+                });
+                directoryContent.push({ path: fileDirectory[index].replace(name, ''), name: name.substr(("\\").length),  content : content.toString() });      
+            } catch { 
+                percentageTotal += percentagePart;
+                this.setProgress(storageBlockName, Math.round(percentageTotal));
+            } // Fail silently on bad files
         }
         this.setProgress(storageBlockName, 100);
         let response = await super.save(storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent });
@@ -63,9 +72,14 @@ export class StorageBlockDirectory extends BaseStorageBlock {
             
             if(fileDirectory.status){
                 if(Number(fileDirectory.data.version) > await this.getVersionFile(storageBlockName)){
+                    let percentageTotal = 0;
+                    let percentagePart = (100/files.length);
                     for (let index = 0; index < files.length; index++) {
-                        this.setProgress(storageBlockName, Math.round((index / files.length) * 100));
-                        await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content);
+                        
+                        await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(()=>{
+                            percentageTotal += percentagePart;
+                            this.setProgress(storageBlockName, Math.round(percentageTotal));
+                        });
                     }
                     this.setProgress(storageBlockName, 100);
                     await this.setVersionFile(storageBlockName, Number(fileDirectory.data.version));
