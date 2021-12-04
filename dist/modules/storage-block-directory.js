@@ -220,7 +220,12 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * @returns percentage out of 100 that the directory has been loaded
      */
     StorageBlockDirectory.prototype.getProgress = function (storageBlockName) {
-        return this.progressTracker[this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; })].progress;
+        try {
+            return this.progressTracker[this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; })].progress;
+        }
+        catch (error) {
+            return 0;
+        }
     };
     /**
      * Get storage block path based on storage block id

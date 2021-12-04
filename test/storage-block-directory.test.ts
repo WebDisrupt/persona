@@ -13,6 +13,7 @@ let storageBlockDirectory: StorageBlockDirectory = new StorageBlockDirectory(
 { appName: appName, personaId: "test-storage-block-module", path: path, key: key }
 );
 const dirStorageBlock = "example-data-directory";
+const dirStorageBlock2 = "example-data-directory-2";
 const mockedDirectory = "C:\\personas-test-directory-module";
 const mockedFiles = ["test_1.json", "test_2.txt", "test_3.exe" , "test_4.png"];
 const mockedFileAddtion = "test.cache";
@@ -73,7 +74,12 @@ describe('Storage Block Directory Module', () => {
         expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(true);
     });
 
-    test("Check that loading and progress is working", async ()=>{ 
+    test("Check that get progress doesn't error when null", async ()=>{ 
+        expect(storageBlockDirectory.getProgress(dirStorageBlock2)).toBe(0);
+    });
+
+    test("Check that set and get progress is working", async ()=>{ 
+        expect(storageBlockDirectory.getProgress(dirStorageBlock+"2")).toBe(0);
         storageBlockDirectory.setProgress(dirStorageBlock);
         expect(storageBlockDirectory.getProgress(dirStorageBlock)).toBe(0);
         storageBlockDirectory.setProgress(dirStorageBlock, Math.round((3 / 7) * 100));

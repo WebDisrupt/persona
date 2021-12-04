@@ -75,7 +75,6 @@ export class StorageBlockDirectory extends BaseStorageBlock {
                     let percentageTotal = 0;
                     let percentagePart = (100/files.length);
                     for (let index = 0; index < files.length; index++) {
-                        
                         await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(()=>{
                             percentageTotal += percentagePart;
                             this.setProgress(storageBlockName, Math.round(percentageTotal));
@@ -114,7 +113,11 @@ export class StorageBlockDirectory extends BaseStorageBlock {
      * @returns percentage out of 100 that the directory has been loaded
      */
     public getProgress(storageBlockName: string){
-        return this.progressTracker[this.progressTracker.findIndex( elem => elem.name === storageBlockName )].progress
+        try {
+            return this.progressTracker[this.progressTracker.findIndex( elem => elem.name === storageBlockName )].progress;
+        } catch (error) {
+            return 0;
+        }
     }
 
     /**
