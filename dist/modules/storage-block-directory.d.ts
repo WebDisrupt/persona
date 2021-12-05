@@ -29,7 +29,7 @@ export declare class StorageBlockDirectory extends BaseStorageBlock {
      * @param storageBlockName - Unique Storage block
      * @returns percentage out of 100 that the directory has been loaded
      */
-    getProgress(storageBlockName: string): any;
+    getProgress(storageBlockName: string): number;
     /**
      * Get storage block path based on storage block id
      * @param storageBlockName

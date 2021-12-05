@@ -221,9 +221,10 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      */
     StorageBlockDirectory.prototype.getProgress = function (storageBlockName) {
         try {
-            return this.progressTracker[this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; })].progress;
+            var progress = this.progressTracker[this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; })].progress;
+            return progress === null ? 0 : Number(progress);
         }
-        catch (error) {
+        catch (_a) {
             return 0;
         }
     };
