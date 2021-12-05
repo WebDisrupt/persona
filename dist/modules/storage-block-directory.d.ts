@@ -1,6 +1,6 @@
 import { moduleOptions } from '../models/module';
 import { BaseStorageBlock } from '../core/storage-block-core';
-import { progressTracker } from 'src/models/progress-tracker';
+import { progressTracker } from '../models/progress-tracker';
 export declare class StorageBlockDirectory extends BaseStorageBlock {
     progressTracker: Array<progressTracker>;
     /**

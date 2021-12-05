@@ -1,13 +1,10 @@
 
 import { generic } from '../helpers/generic';
-import { cypher } from '../helpers/cypher';
 import { defaults } from '../config';
 import { response } from '../helpers/response';
-import { personaRoot } from '../models/persona-root';
 import { moduleOptions } from '../models/module';
-import { StorageBlock } from '../modules/storage-block'
 import { BaseStorageBlock } from '../core/storage-block-core';
-import { progressTracker } from 'src/models/progress-tracker';
+import { progressTracker } from '../models/progress-tracker';
 
 var recursive = require("recursive-readdir");
 var fs = require("fs");
