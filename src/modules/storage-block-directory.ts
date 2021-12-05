@@ -114,8 +114,8 @@ export class StorageBlockDirectory extends BaseStorageBlock {
      */
     public getProgress(storageBlockName: string){
         try {
-            let progress = this.progressTracker[this.progressTracker.findIndex( elem => elem.name === storageBlockName )].progress;
-            return progress === null ? 0 : Number(progress);
+            let currentIndex = this.progressTracker.findIndex( elem => elem.name === storageBlockName );
+            return currentIndex === -1 ? 0 : Math.round(Number(this.progressTracker[currentIndex].progress));
         } catch {
             return 0;
         }
