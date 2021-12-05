@@ -206,7 +206,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      */
     StorageBlockDirectory.prototype.setProgress = function (storageBlockName, progress) {
         if (progress === void 0) { progress = 0; }
-        var currentIndex = this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; });
+        var currentIndex = this.progressTracker.findIndex(function (elem) { return (elem === null || elem === void 0 ? void 0 : elem.name) === storageBlockName; });
         if (currentIndex === -1) {
             this.progressTracker.push({ name: storageBlockName, progress: progress });
         }
@@ -221,7 +221,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      */
     StorageBlockDirectory.prototype.getProgress = function (storageBlockName) {
         try {
-            var currentIndex = this.progressTracker.findIndex(function (elem) { return elem.name === storageBlockName; });
+            var currentIndex = this.progressTracker.findIndex(function (elem) { return (elem === null || elem === void 0 ? void 0 : elem.name) === storageBlockName; });
             return currentIndex === -1 ? 0 : Math.round(Number(this.progressTracker[currentIndex].progress));
         }
         catch (_a) {

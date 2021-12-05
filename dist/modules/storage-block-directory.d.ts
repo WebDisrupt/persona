@@ -1,7 +1,8 @@
 import { moduleOptions } from '../models/module';
 import { BaseStorageBlock } from '../core/storage-block-core';
+import { progressTracker } from 'src/models/progress-tracker';
 export declare class StorageBlockDirectory extends BaseStorageBlock {
-    progressTracker: Array<any>;
+    progressTracker: Array<progressTracker>;
     /**
      * Constructor - Used to assign personaOptions.
      * @param options

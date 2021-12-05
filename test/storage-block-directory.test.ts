@@ -74,12 +74,13 @@ describe('Storage Block Directory Module', () => {
         expect((await storageBlockDirectory.checkDirectory(dirStorageBlock)).status).toBe(true);
     });
 
-    test("Check that get progress doesn't error when null", async ()=>{ 
+    test("Check that get progress doesn't error when null", ()=>{ 
+        expect(storageBlockDirectory.getProgress(dirStorageBlock2)).toBe(0);
+        storageBlockDirectory.setProgress(dirStorageBlock2, null);
         expect(storageBlockDirectory.getProgress(dirStorageBlock2)).toBe(0);
     });
 
-    test("Check that set and get progress is working", async ()=>{ 
-        expect(storageBlockDirectory.getProgress(dirStorageBlock+"2")).toBe(0);
+    test("Check that set and get progress is working", ()=> {
         storageBlockDirectory.setProgress(dirStorageBlock);
         expect(storageBlockDirectory.getProgress(dirStorageBlock)).toBe(0);
         storageBlockDirectory.setProgress(dirStorageBlock, Math.round((3 / 7) * 100));

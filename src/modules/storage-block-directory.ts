@@ -7,13 +7,14 @@ import { personaRoot } from '../models/persona-root';
 import { moduleOptions } from '../models/module';
 import { StorageBlock } from '../modules/storage-block'
 import { BaseStorageBlock } from '../core/storage-block-core';
+import { progressTracker } from 'src/models/progress-tracker';
 
 var recursive = require("recursive-readdir");
 var fs = require("fs");
 
 export class StorageBlockDirectory extends BaseStorageBlock {
 
-    public progressTracker : Array<any> = [];
+    public progressTracker : Array<progressTracker> = [];
 
     /**
      * Constructor - Used to assign personaOptions.
@@ -99,7 +100,7 @@ export class StorageBlockDirectory extends BaseStorageBlock {
      * @param storageBlockName - Unique Storage block 
      */
     public setProgress(storageBlockName: string, progress: number = 0){
-        let currentIndex = this.progressTracker.findIndex( elem => elem.name === storageBlockName );
+        let currentIndex = this.progressTracker.findIndex( elem => elem?.name === storageBlockName );
         if(currentIndex === -1){
             this.progressTracker.push({ name: storageBlockName, progress: progress });
         } else {
@@ -114,7 +115,7 @@ export class StorageBlockDirectory extends BaseStorageBlock {
      */
     public getProgress(storageBlockName: string){
         try {
-            let currentIndex = this.progressTracker.findIndex( elem => elem.name === storageBlockName );
+            let currentIndex = this.progressTracker.findIndex( elem => elem?.name === storageBlockName );
             return currentIndex === -1 ? 0 : Math.round(Number(this.progressTracker[currentIndex].progress));
         } catch {
             return 0;
