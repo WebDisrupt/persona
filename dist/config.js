@@ -8,6 +8,7 @@ var defaults = {
     blockExt: ".pstore",
     root: "root.persona",
     system: "system.persona",
+    cache: "system.cache",
     versionName: "pstore.ver"
 };
 exports.defaults = defaults;

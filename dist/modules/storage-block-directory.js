@@ -125,7 +125,7 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 9:
                         response = _c.sent();
                         if (!response.status) return [3 /*break*/, 11];
-                        return [4 /*yield*/, this.setVersionFile(storageBlockName, newVersion)];
+                        return [4 /*yield*/, this.setVersion(storageBlockName, newVersion, 'both')];
                     case 10:
                         _c.sent();
                         _c.label = 11;
@@ -148,54 +148,64 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
     StorageBlockDirectory.prototype.load = function (storageBlockName, newLocation) {
         if (newLocation === void 0) { newLocation = null; }
         return __awaiter(this, void 0, void 0, function () {
-            var fileDirectory, files, thisPath, _a, percentageTotal_1, percentagePart_1, index, _b;
+            var fileVersion, systemTrackedFileVersion, fileDirectory, files, thisPath, percentageTotal_1, percentagePart_1, index, _a;
             var _this = this;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _c.trys.push([0, 12, , 13]);
+                        _b.trys.push([0, 15, , 16]);
                         this.setProgress(storageBlockName);
-                        return [4 /*yield*/, _super.prototype.load.call(this, storageBlockName)];
+                        return [4 /*yield*/, this.getVersion(storageBlockName, 'file')];
                     case 1:
-                        fileDirectory = _c.sent();
+                        fileVersion = _b.sent();
+                        return [4 /*yield*/, this.getVersion(storageBlockName, 'cache')];
+                    case 2:
+                        systemTrackedFileVersion = _b.sent();
+                        if (!(systemTrackedFileVersion > fileVersion)) return [3 /*break*/, 13];
+                        return [4 /*yield*/, _super.prototype.load.call(this, storageBlockName)];
+                    case 3:
+                        fileDirectory = _b.sent();
                         fileDirectory.data = JSON.parse(fileDirectory.data);
                         files = fileDirectory.data.files;
                         thisPath = newLocation !== null ? newLocation : fileDirectory.data.path;
-                        if (!fileDirectory.status) return [3 /*break*/, 10];
-                        _a = Number(fileDirectory.data.version);
-                        return [4 /*yield*/, this.getVersionFile(storageBlockName)];
-                    case 2:
-                        if (!(_a > (_c.sent()))) return [3 /*break*/, 8];
+                        if (!fileDirectory.status) return [3 /*break*/, 11];
+                        if (!(Number(fileDirectory.data.version) > fileVersion)) return [3 /*break*/, 9];
                         percentageTotal_1 = 0;
                         percentagePart_1 = (100 / files.length);
                         index = 0;
-                        _c.label = 3;
-                    case 3:
-                        if (!(index < files.length)) return [3 /*break*/, 6];
+                        _b.label = 4;
+                    case 4:
+                        if (!(index < files.length)) return [3 /*break*/, 7];
                         return [4 /*yield*/, generic_1.generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(function () {
                                 percentageTotal_1 += percentagePart_1;
                                 _this.setProgress(storageBlockName, Math.round(percentageTotal_1));
                             })];
-                    case 4:
-                        _c.sent();
-                        _c.label = 5;
                     case 5:
-                        index++;
-                        return [3 /*break*/, 3];
+                        _b.sent();
+                        _b.label = 6;
                     case 6:
-                        this.setProgress(storageBlockName, 100);
-                        return [4 /*yield*/, this.setVersionFile(storageBlockName, Number(fileDirectory.data.version))];
+                        index++;
+                        return [3 /*break*/, 4];
                     case 7:
-                        _c.sent();
-                        return [2 /*return*/, response_1.response.success("Directory " + thisPath + " successfully loaded from storage block.")];
-                    case 8: return [2 /*return*/, response_1.response.failed("Loaded version is greater please save progress of " + storageBlockName + ".")];
-                    case 9: return [3 /*break*/, 11];
-                    case 10: return [2 /*return*/, response_1.response.failed("Data storage block called " + storageBlockName + " was found.")];
-                    case 11: return [3 /*break*/, 13];
-                    case 12:
-                        _b = _c.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockName + " failed to load.")];
-                    case 13: return [2 /*return*/];
+                        this.setProgress(storageBlockName, 100);
+                        return [4 /*yield*/, this.setVersion(storageBlockName, Number(fileDirectory.data.version), 'both')];
+                    case 8:
+                        _b.sent();
+                        return [2 /*return*/, response_1.response.success("Directory ".concat(thisPath, " successfully loaded from storage block."))];
+                    case 9:
+                        this.setProgress(storageBlockName, 100);
+                        return [2 /*return*/, response_1.response.failed("Loaded version is greater, so we will not load the stored ".concat(storageBlockName, "."))];
+                    case 10: return [3 /*break*/, 12];
+                    case 11: return [2 /*return*/, response_1.response.failed("Data storage block called ".concat(storageBlockName, " was found."))];
+                    case 12: return [3 /*break*/, 14];
+                    case 13:
+                        this.setProgress(storageBlockName, 100);
+                        return [2 /*return*/, response_1.response.failed("Loaded version is greater, so we will not load the stored ".concat(storageBlockName, "."))];
+                    case 14: return [3 /*break*/, 16];
+                    case 15:
+                        _a = _b.sent();
+                        return [2 /*return*/, response_1.response.failed("Data storage block ".concat(storageBlockName, " failed to load."))];
+                    case 16: return [2 /*return*/];
                 }
             });
         });
@@ -241,13 +251,13 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                     case 0:
                         _g.trys.push([0, 2, , 3]);
                         _b = (_a = response_1.response).success;
-                        _c = ["The " + storageBlockName + " path was return successfully."];
+                        _c = ["The ".concat(storageBlockName, " path was return successfully.")];
                         _e = (_d = JSON).parse;
                         return [4 /*yield*/, _super.prototype.load.call(this, storageBlockName)];
                     case 1: return [2 /*return*/, _b.apply(_a, _c.concat([_e.apply(_d, [(_g.sent()).data]).path]))];
                     case 2:
                         _f = _g.sent();
-                        return [2 /*return*/, response_1.response.failed("The " + storageBlockName + " storage block doesn't exist.")];
+                        return [2 /*return*/, response_1.response.failed("The ".concat(storageBlockName, " storage block doesn't exist."))];
                     case 3: return [2 /*return*/];
                 }
             });
@@ -256,14 +266,18 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
     /**
      * Storage Block Directory - Get version from the pstore.version file inside the directory
      * @param storageBlockName - Storage block that
+     * @param source - Which location are you checking [file, cache]
      * @return New version
      */
-    StorageBlockDirectory.prototype.getVersionFile = function (storageBlockName) {
+    StorageBlockDirectory.prototype.getVersion = function (storageBlockName, source) {
+        if (source === void 0) { source = 'file'; }
         return __awaiter(this, void 0, void 0, function () {
-            var thisPath, _a, _b;
+            var thisPath, _a, _b, version;
             return __generator(this, function (_c) {
                 switch (_c.label) {
-                    case 0: return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
+                    case 0:
+                        if (!(source === 'file')) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.getDirectoryPath(storageBlockName)];
                     case 1:
                         thisPath = (_c.sent()).data;
                         return [4 /*yield*/, fs.existsSync(thisPath + "\\" + config_1.defaults.versionName)];
@@ -278,6 +292,13 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         _a = 0;
                         _c.label = 5;
                     case 5: return [2 /*return*/, _a];
+                    case 6:
+                        if (!(source === 'cache')) return [3 /*break*/, 8];
+                        return [4 /*yield*/, _super.prototype.getCache.call(this, "".concat(storageBlockName, ":storageDirectoryVersion"))];
+                    case 7:
+                        version = _c.sent();
+                        return [2 /*return*/, version ? Number(version.value) : 0];
+                    case 8: return [2 /*return*/];
                 }
             });
         });
@@ -286,10 +307,12 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
      * Storage Block not having
      * @param storageBlockName - Storage block that
      * @param version - Set a new version, if empty increment by 1
+     * @param source - Which location are you checking [file, cache, both]
      * @return New version
      */
-    StorageBlockDirectory.prototype.setVersionFile = function (storageBlockName, version) {
+    StorageBlockDirectory.prototype.setVersion = function (storageBlockName, version, source) {
         if (version === void 0) { version = null; }
+        if (source === void 0) { source = 'file'; }
         return __awaiter(this, void 0, void 0, function () {
             var thisPath, previousVersion, _a, _b, newVersion;
             return __generator(this, function (_c) {
@@ -311,10 +334,18 @@ var StorageBlockDirectory = /** @class */ (function (_super) {
                         return [3 /*break*/, 5];
                     case 5:
                         newVersion = version === null ? (previousVersion + 1).toString() : version.toString();
+                        if (!(source === 'file' || source === 'both')) return [3 /*break*/, 7];
                         return [4 /*yield*/, generic_1.generic.fileUpdate(thisPath, config_1.defaults.versionName, newVersion)];
                     case 6:
                         _c.sent();
-                        return [2 /*return*/, Number(newVersion)];
+                        _c.label = 7;
+                    case 7:
+                        if (!(source === 'cache' || source === 'both')) return [3 /*break*/, 9];
+                        return [4 /*yield*/, _super.prototype.setCache.call(this, "".concat(storageBlockName, ":storageDirectoryVersion"), newVersion)];
+                    case 8:
+                        _c.sent();
+                        _c.label = 9;
+                    case 9: return [2 /*return*/, Number(newVersion)];
                 }
             });
         });

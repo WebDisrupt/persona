@@ -124,4 +124,5 @@ export class BaseStorageBlock extends BaseModule {
             return response.failed(`Failed to delete data storage block(s) because no Persona was found.`);
         }
     }
+
 }

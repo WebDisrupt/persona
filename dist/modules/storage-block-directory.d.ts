@@ -40,16 +40,18 @@ export declare class StorageBlockDirectory extends BaseStorageBlock {
     /**
      * Storage Block Directory - Get version from the pstore.version file inside the directory
      * @param storageBlockName - Storage block that
+     * @param source - Which location are you checking [file, cache]
      * @return New version
      */
-    getVersionFile(storageBlockName: string): Promise<number>;
+    getVersion(storageBlockName: string, source?: string): Promise<number>;
     /**
      * Storage Block not having
      * @param storageBlockName - Storage block that
      * @param version - Set a new version, if empty increment by 1
+     * @param source - Which location are you checking [file, cache, both]
      * @return New version
      */
-    setVersionFile(storageBlockName: string, version?: number): Promise<number>;
+    setVersion(storageBlockName: string, version?: number, source?: string): Promise<number>;
     /**
      * Removes a directory and all files inside that directory based on storage block name.
      * @param storageBlockName - Name of the storage block

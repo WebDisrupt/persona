@@ -93,29 +93,29 @@ var persona = /** @class */ (function () {
      * Return null if user was never loggedIn, returns previous if there was a previous persona user.
      */
     persona.prototype.isLoggedIn = function () {
-        return this.username != null && this.password != null ? response_1.response.success(this.username + " is currently logged in.") :
-            this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.", this.previous) : response_1.response.failed("No user is currently logged in.", null);
+        return this.username != null && this.password != null ? response_1.response.success("".concat(this.username, " is currently logged in.")) :
+            this.previous !== null ? response_1.response.failed("".concat(this.previous.username, " is not currently logged in."), this.previous) : response_1.response.failed("No user is currently logged in.", null);
     };
     /**
      *  Returns the current Persona's id or null if not loggedIn
      */
     persona.prototype.getId = function () {
-        return this.username != null && this.password != null ? response_1.response.success(this.username + "'s id was found.", this.current.id) :
+        return this.username != null && this.password != null ? response_1.response.success("".concat(this.username, "'s id was found."), this.current.id) :
             response_1.response.failed("No user is currently logged in.", null);
     };
     /**
      * Return the currently loaded username inside the standard response body
      */
     persona.prototype.getUsername = function () {
-        return this.username != null ? response_1.response.success(this.username + " was found.", this.username) :
-            this.previous !== null ? response_1.response.failed(this.previous.username + " is not currently logged in.") : response_1.response.failed("No user is currently logged in.");
+        return this.username != null ? response_1.response.success("".concat(this.username, " was found."), this.username) :
+            this.previous !== null ? response_1.response.failed("".concat(this.previous.username, " is not currently logged in.")) : response_1.response.failed("No user is currently logged in.");
     };
     /**
      * Get the current Persona's profile details
      * @returns
      */
     persona.prototype.getProfile = function () {
-        return this.profile === null ? response_1.response.failed("No current profile exists.") : response_1.response.success(this.username + "'s profile has been loaded successfully.", this.profile);
+        return this.profile === null ? response_1.response.failed("No current profile exists.") : response_1.response.success("".concat(this.username, "'s profile has been loaded successfully."), this.profile);
     };
     /**
      * Save Persona's profile details
@@ -133,7 +133,7 @@ var persona = /** @class */ (function () {
                         return [4 /*yield*/, this.save()];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/, response_1.response.success(this.username + "'s profile was saved successfully.")];
+                        return [2 /*return*/, response_1.response.success("".concat(this.username, "'s profile was saved successfully."))];
                 }
             });
         });
@@ -143,7 +143,7 @@ var persona = /** @class */ (function () {
      * @returns
      */
     persona.prototype.getRecentList = function () {
-        return this.recentList !== null ? response_1.response.success("Success, " + this.recentList.length + " Prsonas found.", this.recentList) : response_1.response.failed("Could not find any recently loaded Prsonas.");
+        return this.recentList !== null ? response_1.response.success("Success, ".concat(this.recentList.length, " Prsonas found."), this.recentList) : response_1.response.failed("Could not find any recently loaded Prsonas.");
     };
     /**
      * Add a new entry to the recently loaded list.
@@ -175,7 +175,7 @@ var persona = /** @class */ (function () {
             return __generator(this, function (_h) {
                 switch (_h.label) {
                     case 0:
-                        filename = this.path + "\\" + config_1.defaults.system;
+                        filename = "".concat(this.path, "\\").concat(config_1.defaults.system);
                         message = null;
                         if (!fs.existsSync(filename)) return [3 /*break*/, 5];
                         _h.label = 1;
@@ -236,7 +236,7 @@ var persona = /** @class */ (function () {
                             previous: this.previous,
                             recentList: this.recentList
                         };
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(this.path, "" + config_1.defaults.system, JSON.stringify(systemData))];
+                        return [4 /*yield*/, generic_1.generic.fileUpdate(this.path, "".concat(config_1.defaults.system), JSON.stringify(systemData))];
                     case 1:
                         wasSaved = _b.sent();
                         return [2 /*return*/, wasSaved ? response_1.response.success("System data was saved successfully.") : response_1.response.failed("Failed to save system data.")];
@@ -264,7 +264,7 @@ var persona = /** @class */ (function () {
                         this.password = null;
                         this.profile = null;
                         this.loadModules();
-                        return [2 /*return*/, response_1.response.success("Successfully logged out of the Persona " + this.previous.username + ".")];
+                        return [2 /*return*/, response_1.response.success("Successfully logged out of the Persona ".concat(this.previous.username, "."))];
                 }
             });
         });
@@ -311,7 +311,7 @@ var persona = /** @class */ (function () {
                     case 2:
                         id = _a.sent();
                         if (!(id !== null)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, generic_1.generic.fileLoad(this.path + "\\" + id + "\\" + config_1.defaults.root).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, generic_1.generic.fileLoad("".concat(this.path, "\\").concat(id, "\\").concat(config_1.defaults.root)).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 var persona;
                                 var _a;
                                 return __generator(this, function (_b) {
@@ -326,11 +326,11 @@ var persona = /** @class */ (function () {
                                             this.username = username;
                                             this.current = persona;
                                             this.profile = JSON.parse(cypher_1.cypher.decrypt(persona.profile, this.key));
-                                            return [4 /*yield*/, this.addRecentListItem({ id: id, username: username, avatar: ((_a = this.profile) === null || _a === void 0 ? void 0 : _a.avatar) || null, location: this.path + "\\" + id })];
+                                            return [4 /*yield*/, this.addRecentListItem({ id: id, username: username, avatar: ((_a = this.profile) === null || _a === void 0 ? void 0 : _a.avatar) || null, location: "".concat(this.path, "\\").concat(id) })];
                                         case 2:
                                             _b.sent();
                                             this.login();
-                                            return [2 /*return*/, response_1.response.success(username + ", Welcome back!")];
+                                            return [2 /*return*/, response_1.response.success("".concat(username, ", Welcome back!"))];
                                         case 3: return [2 /*return*/, response_1.response.failed("The username or password is incorrect.")];
                                     }
                                 });
@@ -369,7 +369,7 @@ var persona = /** @class */ (function () {
                         return [4 /*yield*/, this.unload()];
                     case 4:
                         _b.sent();
-                        return [2 /*return*/, response_1.response.success(username + "'s Persona has been deleted.")];
+                        return [2 /*return*/, response_1.response.success("".concat(username, "'s Persona has been deleted."))];
                     case 5:
                         _a = _b.sent();
                         return [2 /*return*/, response_1.response.failed("Something failed when deleting this Persona.")];
@@ -401,12 +401,12 @@ var persona = /** @class */ (function () {
                     case 2:
                         checkIfPersonaExists = _a.sent();
                         if (checkIfPersonaExists !== null)
-                            return [2 /*return*/, response_1.response.failed("Persona " + username + " already exists, please select a different username.")];
+                            return [2 /*return*/, response_1.response.failed("Persona ".concat(username, " already exists, please select a different username."))];
                         return [4 /*yield*/, this.generatePersonaId().then(function (id) { return id; })];
                     case 3:
                         newID = _a.sent();
                         recoveryId = cypher_1.cypher.generateRecoveryCode();
-                        location = this.path + "\\" + newID;
+                        location = "".concat(this.path, "\\").concat(newID);
                         return [4 /*yield*/, cypher_1.cypher.hash(password + username, Number(strength.toString())).then(function (hash) { return __awaiter(_this, void 0, void 0, function () {
                                 var newRes;
                                 return __generator(this, function (_a) {
@@ -428,11 +428,11 @@ var persona = /** @class */ (function () {
                                             return [4 /*yield*/, this.addRecentListItem({ id: newID, username: username, avatar: null, location: location })];
                                         case 1:
                                             _a.sent();
-                                            return [4 /*yield*/, generic_1.generic.fileUpdate(location, "" + config_1.defaults.root, JSON.stringify(this.current))];
+                                            return [4 /*yield*/, generic_1.generic.fileUpdate(location, "".concat(config_1.defaults.root), JSON.stringify(this.current))];
                                         case 2:
                                             newRes = _a.sent();
                                             this.login();
-                                            return [2 /*return*/, newRes ? response_1.response.success("Persona " + this.username + " successfully created.", recoveryId) : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
+                                            return [2 /*return*/, newRes ? response_1.response.success("Persona ".concat(this.username, " successfully created."), recoveryId) : response_1.response.failed("Persona ".concat(this.username, " failed to be created. Please check folder permissions."))];
                                     }
                                 });
                             }); })];
@@ -453,10 +453,10 @@ var persona = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         if (!(this.current !== null && this.username !== null && this.password !== null)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(this.path + "\\" + this.current.id, "" + config_1.defaults.root, JSON.stringify(this.current))];
+                        return [4 /*yield*/, generic_1.generic.fileUpdate("".concat(this.path, "\\").concat(this.current.id), "".concat(config_1.defaults.root), JSON.stringify(this.current))];
                     case 1:
                         newRes = _a.sent();
-                        return [2 /*return*/, newRes ? response_1.response.success("Persona " + this.username + " successfully created.") : response_1.response.failed("Persona " + this.username + " failed to be created. Please check folder permissions.")];
+                        return [2 /*return*/, newRes ? response_1.response.success("Persona ".concat(this.username, " successfully created.")) : response_1.response.failed("Persona ".concat(this.username, " failed to be created. Please check folder permissions."))];
                     case 2: return [2 /*return*/, response_1.response.failed('Persona failed to be saved. No Persona is active.')];
                 }
             });
@@ -489,10 +489,10 @@ var persona = /** @class */ (function () {
                                 return __generator(this, function (_c) {
                                     switch (_c.label) {
                                         case 0:
-                                            personaFolder = this.path + "\\" + personaId;
+                                            personaFolder = "".concat(this.path, "\\").concat(personaId);
                                             if (!fs.lstatSync(personaFolder).isDirectory()) return [3 /*break*/, 2];
                                             _b = (_a = JSON).parse;
-                                            return [4 /*yield*/, generic_1.generic.fileLoad(personaFolder + "\\" + config_1.defaults.root)];
+                                            return [4 /*yield*/, generic_1.generic.fileLoad("".concat(personaFolder, "\\").concat(config_1.defaults.root))];
                                         case 1:
                                             rootFile = _b.apply(_a, [_c.sent()]);
                                             return [2 /*return*/, username === cypher_1.cypher.decrypt(rootFile.username, key)];

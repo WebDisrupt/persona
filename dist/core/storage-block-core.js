@@ -74,7 +74,7 @@ var BaseStorageBlock = /** @class */ (function (_super) {
      * @returns {boolean}
      */
     BaseStorageBlock.prototype.exists = function (storageBlockId) {
-        return fs.existsSync(this.path + "\\" + this.personaId + "\\" + this.appName + "." + storageBlockId + config_1.defaults.blockExt) ? true : false;
+        return fs.existsSync("".concat(this.path, "\\").concat(this.personaId, "\\").concat(this.appName, ".").concat(storageBlockId).concat(config_1.defaults.blockExt)) ? true : false;
     };
     /**
      * Loads a block of data form an existing block.
@@ -88,15 +88,15 @@ var BaseStorageBlock = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
+                        filename = "".concat(this.appName, ".").concat(storageBlockId).concat(config_1.defaults.blockExt);
                         if (!this.exists(storageBlockId)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, generic_1.generic.fileLoad(this.path + "\\" + this.personaId + "\\" + filename).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
+                        return [4 /*yield*/, generic_1.generic.fileLoad("".concat(this.path, "\\").concat(this.personaId, "\\").concat(filename)).then(function (content) { return __awaiter(_this, void 0, void 0, function () {
                                 return __generator(this, function (_a) {
-                                    return [2 /*return*/, response_1.response.success("Data storage block " + storageBlockId + " was loaded successfully.", cypher_1.cypher.decrypt(content.toString(), this.key))];
+                                    return [2 /*return*/, response_1.response.success("Data storage block ".concat(storageBlockId, " was loaded successfully."), cypher_1.cypher.decrypt(content.toString(), this.key))];
                                 });
                             }); })];
                     case 1: return [2 /*return*/, _a.sent()];
-                    case 2: return [2 /*return*/, response_1.response.failed("Data storage block " + storageBlockId + " doesn't exist.", this.path + "\\" + this.personaId + "\\" + filename)];
+                    case 2: return [2 /*return*/, response_1.response.failed("Data storage block ".concat(storageBlockId, " doesn't exist."), "".concat(this.path, "\\").concat(this.personaId, "\\").concat(filename))];
                 }
             });
         });
@@ -115,7 +115,7 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                     case 0:
                         if (typeof content !== "string")
                             content = JSON.stringify(content);
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
+                        filename = "".concat(this.appName, ".").concat(storageBlockId).concat(config_1.defaults.blockExt);
                         if (this.personaId === null)
                             return [2 /*return*/, response_1.response.failed("No profile loaded.")];
                         if (storageBlockId === undefined || storageBlockId === null)
@@ -132,7 +132,7 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                     case 4:
                         newRes = _a;
                         if (newRes.status === true) {
-                            return [2 /*return*/, response_1.response.success("Data storage block " + filename + " was saved successfully.")];
+                            return [2 /*return*/, response_1.response.success("Data storage block ".concat(filename, " was saved successfully."))];
                         }
                         else {
                             return [2 /*return*/, newRes];
@@ -154,14 +154,14 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        personaLocation = this.path + "\\" + this.personaId;
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(personaLocation, "" + filename, cypher_1.cypher.encrypt(content, this.key))];
+                        personaLocation = "".concat(this.path, "\\").concat(this.personaId);
+                        return [4 /*yield*/, generic_1.generic.fileUpdate(personaLocation, "".concat(filename), cypher_1.cypher.encrypt(content, this.key))];
                     case 1:
                         _a.sent();
                         return [2 /*return*/, response_1.response.success("Data storage block successfully created.")];
                     case 2:
                         err_1 = _a.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + filename + " failed to create successfully.")];
+                        return [2 /*return*/, response_1.response.failed("Data storage block ".concat(filename, " failed to create successfully."))];
                     case 3: return [2 /*return*/];
                 }
             });
@@ -179,13 +179,13 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, generic_1.generic.fileUpdate(this.path + "\\" + this.personaId, "" + filename, cypher_1.cypher.encrypt(content, this.key))];
+                        return [4 /*yield*/, generic_1.generic.fileUpdate("".concat(this.path, "\\").concat(this.personaId), "".concat(filename), cypher_1.cypher.encrypt(content, this.key))];
                     case 1:
                         _a.sent();
-                        return [2 /*return*/, response_1.response.success("Data storage block " + filename + " successfully updated.")];
+                        return [2 /*return*/, response_1.response.success("Data storage block ".concat(filename, " successfully updated."))];
                     case 2:
                         err_2 = _a.sent();
-                        return [2 /*return*/, response_1.response.failed("Data storage block " + filename + " failed to update successfully.")];
+                        return [2 /*return*/, response_1.response.failed("Data storage block ".concat(filename, " failed to update successfully."))];
                     case 3: return [2 /*return*/];
                 }
             });
@@ -203,7 +203,7 @@ var BaseStorageBlock = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        filename = this.appName + "." + storageBlockId + config_1.defaults.blockExt;
+                        filename = "".concat(this.appName, ".").concat(storageBlockId).concat(config_1.defaults.blockExt);
                         if (!(this.personaId !== null)) return [3 /*break*/, 4];
                         if (!(storageBlockId === null)) return [3 /*break*/, 2];
                         return [4 /*yield*/, fs.promises.readdir(this.path + "\\" + this.personaId)];
@@ -211,7 +211,7 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                         files = _a.sent();
                         try {
                             files.forEach(function (file) {
-                                if (file !== "" + config_1.defaults.root) {
+                                if (file !== "".concat(config_1.defaults.root)) {
                                     fs.unlinkSync(_this.path + "\\" + _this.personaId + "\\" + file);
                                 }
                             });
@@ -224,10 +224,10 @@ var BaseStorageBlock = /** @class */ (function (_super) {
                     case 2:
                         try {
                             fs.unlinkSync(this.path + "\\" + this.personaId + "\\" + filename);
-                            return [2 /*return*/, response_1.response.success("Successfully deleted data storage block.[" + filename + "]")];
+                            return [2 /*return*/, response_1.response.success("Successfully deleted data storage block.[".concat(filename, "]"))];
                         }
                         catch (err) {
-                            return [2 /*return*/, response_1.response.failed("Failed to find the data storage block.[" + filename + "]")];
+                            return [2 /*return*/, response_1.response.failed("Failed to find the data storage block.[".concat(filename, "]"))];
                         }
                         _a.label = 3;
                     case 3: return [3 /*break*/, 5];

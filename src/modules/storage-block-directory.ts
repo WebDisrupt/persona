@@ -50,7 +50,7 @@ export class StorageBlockDirectory extends BaseStorageBlock {
         }
         this.setProgress(storageBlockName, 100);
         let response = await super.save(storageBlockName, { type: "dir", version: newVersion, path: directoryPath, files: directoryContent });
-        if(response.status) await this.setVersionFile(storageBlockName, newVersion);
+        if(response.status) await this.setVersion(storageBlockName, newVersion, 'both');
         if(clearDirectory) await this.removeDirectory(storageBlockName);
         return response;
     }
@@ -63,29 +63,37 @@ export class StorageBlockDirectory extends BaseStorageBlock {
     public async load(storageBlockName: string, newLocation: string = null){
         try {
             this.setProgress(storageBlockName);
-            let fileDirectory = await super.load(storageBlockName);
-            fileDirectory.data = JSON.parse(fileDirectory.data);
-            let files = fileDirectory.data.files;
-            let thisPath = newLocation !== null ? newLocation : fileDirectory.data.path;
-            
-            if(fileDirectory.status){
-                if(Number(fileDirectory.data.version) > await this.getVersionFile(storageBlockName)){
-                    let percentageTotal = 0;
-                    let percentagePart = (100/files.length);
-                    for (let index = 0; index < files.length; index++) {
-                        await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(()=>{
-                            percentageTotal += percentagePart;
-                            this.setProgress(storageBlockName, Math.round(percentageTotal));
-                        });
+            let fileVersion : number =  await this.getVersion(storageBlockName, 'file');
+            let systemTrackedFileVersion : number = await this.getVersion(storageBlockName, 'cache');
+            if(systemTrackedFileVersion > fileVersion){
+                let fileDirectory = await super.load(storageBlockName);
+                fileDirectory.data = JSON.parse(fileDirectory.data);
+                let files = fileDirectory.data.files;
+                let thisPath = newLocation !== null ? newLocation : fileDirectory.data.path;
+                
+                if(fileDirectory.status){
+                    if(Number(fileDirectory.data.version) > fileVersion){ // fallback version check
+                        let percentageTotal = 0;
+                        let percentagePart = (100/files.length);
+                        for (let index = 0; index < files.length; index++) {
+                            await generic.fileUpdate(files[index].path.replace(fileDirectory.data.path, thisPath), files[index].name, files[index].content).then(()=>{
+                                percentageTotal += percentagePart;
+                                this.setProgress(storageBlockName, Math.round(percentageTotal));
+                            });
+                        }
+                        this.setProgress(storageBlockName, 100);
+                        await this.setVersion(storageBlockName, Number(fileDirectory.data.version), 'both');
+                        return response.success(`Directory ${thisPath} successfully loaded from storage block.`);
+                    } else {
+                        this.setProgress(storageBlockName, 100);
+                        return response.failed(`Loaded version is greater, so we will not load the stored ${storageBlockName}.`);
                     }
-                    this.setProgress(storageBlockName, 100);
-                    await this.setVersionFile(storageBlockName, Number(fileDirectory.data.version));
-                    return response.success(`Directory ${thisPath} successfully loaded from storage block.`);
                 } else {
-                    return response.failed(`Loaded version is greater please save progress of ${storageBlockName}.`);
+                    return response.failed(`Data storage block called ${storageBlockName} was found.`);
                 }
             } else {
-                return response.failed(`Data storage block called ${storageBlockName} was found.`);
+                this.setProgress(storageBlockName, 100);
+                return response.failed(`Loaded version is greater, so we will not load the stored ${storageBlockName}.`);
             }
         } catch {
             return response.failed(`Data storage block ${storageBlockName} failed to load.`);
@@ -135,27 +143,39 @@ export class StorageBlockDirectory extends BaseStorageBlock {
     /**
      * Storage Block Directory - Get version from the pstore.version file inside the directory
      * @param storageBlockName - Storage block that
+     * @param source - Which location are you checking [file, cache]
      * @return New version
      */
-    public async getVersionFile(storageBlockName : string){
-        let thisPath = (await this.getDirectoryPath(storageBlockName)).data;
-        return await fs.existsSync(thisPath+"\\"+defaults.versionName) ? Number(await generic.fileLoad(thisPath+"\\"+defaults.versionName)) : 0;
+    public async getVersion(storageBlockName : string, source:string = 'file'){
+        if(source === 'file'){ 
+            let thisPath = (await this.getDirectoryPath(storageBlockName)).data;
+            return await fs.existsSync(thisPath+"\\"+defaults.versionName) ? Number(await generic.fileLoad(thisPath+"\\"+defaults.versionName)) : 0;
+        } else if (source === 'cache'){
+            let version = await super.getCache(`${storageBlockName}:storageDirectoryVersion`);
+            return version ? Number(version.value) : 0;
+        }
     }
 
     /**
      * Storage Block not having
      * @param storageBlockName - Storage block that
      * @param version - Set a new version, if empty increment by 1
+     * @param source - Which location are you checking [file, cache, both]
      * @return New version
      */
-    public async setVersionFile(storageBlockName : string, version: number = null){
+    public async setVersion(storageBlockName : string, version: number = null, source:string = 'file'){
         let thisPath = (await this.getDirectoryPath(storageBlockName)).data;
         let previousVersion : number  = 0;
         try{
             previousVersion = Number(await generic.fileLoad(thisPath+"\\"+defaults.versionName));
         } catch { } // Fail silently if you can't find bersion file
         let newVersion : string = version === null ? ( previousVersion + 1 ).toString() : version.toString();
-        await generic.fileUpdate(thisPath, defaults.versionName, newVersion);
+        if(source === 'file' || source === 'both'){ 
+            await generic.fileUpdate(thisPath, defaults.versionName, newVersion);
+        }
+        if (source === 'cache' || source === 'both'){
+            await super.setCache(`${storageBlockName}:storageDirectoryVersion`, newVersion);
+        }
         return Number(newVersion);
     }
 

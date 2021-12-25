@@ -71,19 +71,19 @@ var generic = /** @class */ (function () {
     generic.fileUpdate = function (path, filename, data) {
         return __awaiter(this, void 0, void 0, function () {
             var errorMsg;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         errorMsg = "Failed to save file, please make sure this Application has the correct permissions.";
                         return [4 /*yield*/, new Promise(function (resolve, reject) {
                                 var _this = this;
                                 if (!fs.existsSync(path)) {
                                     fs.mkdir(path, { recursive: true }, function (err) { return __awaiter(_this, void 0, void 0, function () {
-                                        return __generator(this, function (_a) {
+                                        return __generator(this, function (_b) {
                                             if (err) {
                                                 reject(errorMsg);
                                             }
-                                            fs.writeFile(path + "\\" + filename, data, function (err) {
+                                            fs.writeFile("".concat(path, "\\").concat(filename), data, function (err) {
                                                 if (err) {
                                                     reject(errorMsg);
                                                 }
@@ -94,7 +94,7 @@ var generic = /** @class */ (function () {
                                     }); });
                                 }
                                 else {
-                                    fs.writeFile(path + "\\" + filename, data, function (err) {
+                                    fs.writeFile("".concat(path, "\\").concat(filename), data, function (err) {
                                         if (err) {
                                             reject(errorMsg);
                                         }
@@ -102,7 +102,7 @@ var generic = /** @class */ (function () {
                                     });
                                 }
                             })];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 1: return [2 /*return*/, _b.sent()];
                 }
             });
         });
@@ -114,8 +114,8 @@ var generic = /** @class */ (function () {
      */
     generic.fileLoad = function (filename) {
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
                             if (fs.existsSync(filename)) {
                                 fs.readFile(filename, function (err, file) {
@@ -129,11 +129,13 @@ var generic = /** @class */ (function () {
                                 reject(new Error("Cannot find the file you specified."));
                             }
                         })];
-                    case 1: return [2 /*return*/, _a.sent()];
+                    case 1: return [2 /*return*/, _b.sent()];
                 }
             });
         });
     };
+    var _a;
+    _a = generic;
     /**
      * Performs an async version of array.some passing in an array and the function
      * @param arr - Array to be iterated on
@@ -142,19 +144,19 @@ var generic = /** @class */ (function () {
      */
     generic.asyncSome = function (arr, predicate) { return __awaiter(void 0, void 0, void 0, function () {
         var _i, arr_1, e;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(_a, function (_b) {
+            switch (_b.label) {
                 case 0:
                     _i = 0, arr_1 = arr;
-                    _a.label = 1;
+                    _b.label = 1;
                 case 1:
                     if (!(_i < arr_1.length)) return [3 /*break*/, 4];
                     e = arr_1[_i];
                     return [4 /*yield*/, predicate(e)];
                 case 2:
-                    if (_a.sent())
+                    if (_b.sent())
                         return [2 /*return*/, true];
-                    _a.label = 3;
+                    _b.label = 3;
                 case 3:
                     _i++;
                     return [3 /*break*/, 1];
@@ -170,19 +172,19 @@ var generic = /** @class */ (function () {
      */
     generic.asyncFind = function (arr, predicate) { return __awaiter(void 0, void 0, void 0, function () {
         var _i, arr_2, e;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        return __generator(_a, function (_b) {
+            switch (_b.label) {
                 case 0:
                     _i = 0, arr_2 = arr;
-                    _a.label = 1;
+                    _b.label = 1;
                 case 1:
                     if (!(_i < arr_2.length)) return [3 /*break*/, 4];
                     e = arr_2[_i];
                     return [4 /*yield*/, predicate(e)];
                 case 2:
-                    if (_a.sent())
+                    if (_b.sent())
                         return [2 /*return*/, e];
-                    _a.label = 3;
+                    _b.label = 3;
                 case 3:
                     _i++;
                     return [3 /*break*/, 1];

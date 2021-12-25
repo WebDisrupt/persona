@@ -162,7 +162,9 @@ export class persona {
                 username: this.username, 
                 avatar: this.profile?.avatar != null ? this.profile.avatar : null 
             };
-        } else {  this.previous = null;  }
+        } else {  
+            this.previous = null;  
+        }
         let systemData : systemData = {
             previous : this.previous,
             recentList : this.recentList

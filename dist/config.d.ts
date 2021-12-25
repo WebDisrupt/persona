@@ -5,6 +5,7 @@ declare const defaults: {
     blockExt: string;
     root: string;
     system: string;
+    cache: string;
     versionName: string;
 };
 export { defaults };

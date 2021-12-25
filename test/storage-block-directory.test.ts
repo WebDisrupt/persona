@@ -49,14 +49,14 @@ describe('Storage Block Directory Module', () => {
     });
 
     test("Check the getter and setter for directory file versioning.", async ()=>{
-        expect((await storageBlockDirectory.getVersionFile(dirStorageBlock))).toBe(1);
-        expect((await storageBlockDirectory.setVersionFile(dirStorageBlock))).toBe(2);
-        expect((await storageBlockDirectory.setVersionFile(dirStorageBlock))).toBe(3);
+        expect((await storageBlockDirectory.getVersion(dirStorageBlock))).toBe(1);
+        expect((await storageBlockDirectory.setVersion(dirStorageBlock))).toBe(2);
+        expect((await storageBlockDirectory.setVersion(dirStorageBlock))).toBe(3);
     });
 
    test("Check loading stale content using directory file versioning.", async ()=>{
         await storageBlockDirectory.save(mockedDirectory, dirStorageBlock);
-        await storageBlockDirectory.setVersionFile(dirStorageBlock, 1);
+        await storageBlockDirectory.setVersion(dirStorageBlock, 1);
         expect((await storageBlockDirectory.load(dirStorageBlock)).status).toBe(false);
     });
 

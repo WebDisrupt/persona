@@ -183,7 +183,7 @@ var StorageBlock = /** @class */ (function (_super) {
                         files = _a.sent();
                         try {
                             files.forEach(function (file) {
-                                if (file.includes("" + config_1.defaults.blockExt)) {
+                                if (file.includes("".concat(config_1.defaults.blockExt))) {
                                     newLinkList.push({ name: file, path: _this.path + "\\" + _this.personaId + "\\" + file });
                                 }
                             });
