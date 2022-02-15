@@ -5,7 +5,7 @@ import { StorageBlock } from '../src/modules/storage-block'
 
 const username = "john@doe.com"; 
 const password = "123456";
-const key = password + username;
+const key = password;
 const path = "C:\\personas-test-storage-block";
 const appName = "app-example-domain-com";
 let storageBlock: StorageBlock = new StorageBlock(

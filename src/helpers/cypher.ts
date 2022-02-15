@@ -69,7 +69,6 @@ export class cypher {
      * @returns 
      */   
      public static async hash(password : string, strength: number = 3){
-        //return await bcrypt.hash(password, saltRounds);
         return (await argon2.hash(password, this.getStrength(strength))).toString();
     }
 
@@ -91,7 +90,6 @@ export class cypher {
      * @returns 
      */   
     public static async verify(password : string, hash: string){
-        //return bcrypt.compare(password, hash);
         return await argon2.verify(hash, password);
     }
 

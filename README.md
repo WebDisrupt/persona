@@ -1,9 +1,9 @@
 
 
 # Persona ![Build](https://img.shields.io/github/package-json/v/WebDisrupt/persona/master?label=Stable%20Version) ![coverage](https://img.shields.io/badge/coverage-93.47%25-green)
-Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password and username is used as the private key to unlock your data.
+Store local data in a secure data vault. The persona system allows you to create a profile which can flexibly store any data. The idea is that no one can access that data unless know the username and master password. The master password is used as the private key to unlock your data.
 
-This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and big tech. Keep your data safe with ease. 
+This library uses a combination of Argon2id hashing and AES 256 encryption which is very much infeasible to crack with current technology. This library was created so that people can encrypt their data and avoiding all data mining opperations done by malicious software and unscrupulous people. Keep your data safe with ease. 
 
 
 ## Installation 
@@ -45,6 +45,10 @@ Although none of these parameters are technically required, we do reccommend at 
 }
 ```
 - **pervious**: Last loaded persona for quick reference on subsequent ussage. If not provided it will load from the system.persona file.
+
+
+## Upgrade from version to 3
+Refactored the Persona functionality only to use the master password in encryption to simplify the system and allow users to change their username without re-encrypting all their data. This will break previously encrypted data. If you need to upgrade please copy over previous data, or I will add conversion features.
 
 ## Upgrade from version 1 to 2
 Some massive changes have happened in version 2.0. The qaulity and mantainability have been reimagined. The only noticable usability change is that storage block and directory storage block functionality is now located under the module object with more standardized names.

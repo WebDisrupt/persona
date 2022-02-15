@@ -225,7 +225,7 @@ export class persona {
         if(id !== null){
             return await generic.fileLoad(`${this.path}\\${id}\\${defaults.root}`).then( async (content) => {
                 let persona : personaRoot = JSON.parse(content);
-                this.key = password + username;
+                this.key = password;
                     if(await cypher.verify(this.key, persona.password)){
                         this.password = password;
                         this.username = username;
@@ -279,10 +279,10 @@ export class persona {
         let newID = await this.generatePersonaId().then((id:string) => { return id; });
         let recoveryId = cypher.generateRecoveryCode();
         let location = `${this.path}\\${newID}`;
-        return await cypher.hash(password+username, Number(strength.toString())).then( async hash => {
-            this.username = username;
-            this.password = password;
-            this.key = password+username;
+        this.username = username;
+        this.password = password;
+        this.key = password;
+        return await cypher.hash(this.key, Number(strength.toString())).then( async hash => {
             this.current = {
                 id: newID,
                 username: cypher.encrypt(username, this.key),
@@ -321,7 +321,7 @@ export class persona {
      * @returns 
      */
     private async find(username:string = null, password:string = null){
-        let key = password+username;
+        let key = password;
         if(this.current !== null && password === this.password && username === this.username) return this.current.id
         let files : Array<string> = await fs.promises.readdir(this.path);
         let id = null;

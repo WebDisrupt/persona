@@ -61,24 +61,28 @@ describe('New Persona lifecycle for each test.', () => {
     });
 
     /// Persona Actions
-    test("Create new Persona and load it", async ()=>{
+    test("Create new Persona and load it.", async ()=>{
         expect((await personaInstance.load(username, password)).status).toBe(true);
     });
 
-    test("Get Persona id", ()=>{
+    test("Try to create a Persona using existing username and fail.", async ()=>{
+        expect((await personaInstance.create(username, password, 1)).status).toBe(false);
+    });
+
+    test("Get Persona id.", ()=>{
         expect(personaInstance.getId().status).toBe(true);
     });
 
-    test("Check if Persona is logged in", async ()=>{
+    test("Check if Persona is logged in.", async ()=>{
         expect((await personaInstance.isLoggedIn()).status).toBe(true);
     });
 
-    test("Check if Persona is logged out after unload", async ()=>{
+    test("Check if Persona is logged out after unload.", async ()=>{
         await personaInstance.unload();
         expect((await personaInstance.isLoggedIn()).status).toBe(false);
     });
 
-    test("Update a Persona", async ()=>{
+    test("Update a Persona.", async ()=>{
         expect((await personaInstance.save()).status).toBe(true);
     });
 
@@ -92,17 +96,17 @@ describe('New Persona lifecycle for each test.', () => {
         expect((await personaInstance.systemLoad()).data.previous.username).toBe(username);
     });
 
-    test("Delete a persona that dsoes exist", async ()=>{
+    test("Delete a persona that does exist.", async ()=>{
         await personaInstance.delete(username, password);
         expect((await personaInstance.load(username, password)).status).toBe(false);
     });
 
-    test("Delete a persona that doesn't exist", async ()=>{
+    test("Delete a persona that doesn't exist.", async ()=>{
         await personaInstance.delete(username, password);
         expect((await personaInstance.delete(username, password)).status).toBe(false);
     });
 
-    test("Check saving and loading profile data", async ()=>{
+    test("Check saving and loading profile data.", async ()=>{
         
         let profile = {
             avatar: "base64:34894ybf2304==",
@@ -140,7 +144,7 @@ describe('New Persona lifecycle for each test.', () => {
         expect((await personaInstance.module.storageBlock.getList()).data.length).toBe(1);
     });
 
-    test("Delete a data storage block(s)", async ()=>{
+    test("Delete a data storage block(s).", async ()=>{
         let thisId = "example-data-block";
         let thisId2 = "example-data-block2";
         let thisContent = JSON.stringify({ "data" : "The text you want to save" });
@@ -151,7 +155,7 @@ describe('New Persona lifecycle for each test.', () => {
         expect((await personaInstance.module.storageBlock.delete()).status).toBe(true);
     });
 
-    test("Load multiple data storage blocks mapped while perserving the previous data", async ()=>{
+    test("Load multiple data storage blocks mapped while perserving the previous data.", async ()=>{
         let defaultObject = {
             exampleDataBlock : { "data" : "nothing loaded" },
             exampleDataBlock2 : { "data" : "nothing loaded" },
